@@ -103,6 +103,10 @@ export default class Room extends LoggerClass {
 		return this.players.get(ws);
 	}
 
+	isEmpty(): boolean {
+		return this.players.size === 0;
+	}
+
 	getWs(name: string): Websocket | null {
 		let ws: Websocket | null;
 		this.players.forEach((value, key) => {
