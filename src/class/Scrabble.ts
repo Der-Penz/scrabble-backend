@@ -1,35 +1,34 @@
+import Char from '../types/Char';
 import Bag from './Bag';
 import Bench from './Bench';
 import Board from './Board';
+import LetterTile from './LetterTile';
 import Room from './Room';
 import WSMessage from './WSMessage';
 
 class Scrabble {
 	private board: Board;
 	private benches: Map<string, Bench> = new Map();
-	private currentPlayer = 0;
+	private currentPlayer: number;
 	private bag: Bag;
 	private room: Room;
 
-	constructor(
-		room: Room,
-		players: string[],
-		fillMap?: string
-	) {
+	constructor(room: Room, players: string[], fillMap?: string) {
 		this.board = new Board();
 		this.bag = new Bag(fillMap);
 		this.room = room;
+		this.currentPlayer = this.benches.size - 1;
 
 		players.forEach((player) =>
 			this.benches.set(player, new Bench(player, this.bag.drawMany(1)))
 		);
 	}
 
-	private currentPlayerName(): string {
+	currentPlayerName(): string {
 		return [...this.benches.keys()][this.currentPlayer];
 	}
 
-	nextPlayer() {
+	private nextPlayer() {
 		this.currentPlayer = (this.currentPlayer + 1) % this.benches.size;
 
 		const bench = this.benches.get(this.currentPlayerName());
@@ -39,7 +38,6 @@ class Scrabble {
 			bench.addTile(this.bag.drawOne());
 		}
 
-		//send new bench to only the player
 		this.room.sendMessage(
 			new WSMessage('game:next', {
 				currentPlayer: playerName,
@@ -48,23 +46,60 @@ class Scrabble {
 			playerName
 		);
 
-		//send all the new board and the bag
-		this.room.broadcastMessage(new WSMessage('game:state', {
-			bag: this.bag,
-			board: this.board.getBoard(),
-			currentPlayer: playerName,
-		}));
+		this.broadcastGameState();
 	}
 
-	drawTile(): boolean {
-		const playerName = [...this.benches.keys()][this.currentPlayer];
+	private broadcastGameState() {
+		const playerName = this.currentPlayerName();
+		const bench = this.benches.get(playerName);
+
+		//send all the new board and the bag
+		this.room.broadcastMessage(
+			new WSMessage('game:state', {
+				bag: this.bag,
+				board: this.board.getBoard(),
+				currentPlayer: playerName,
+			})
+		);
+	}
+
+	private drawTile(): boolean {
+		const playerName = this.currentPlayerName();
 
 		if (this.benches.get(playerName).isFull()) {
 			return false;
 		}
-		this.benches.get(playerName).addTile(this.bag.drawOne());
+		this.benches.get(this.currentPlayerName()).addTile(this.bag.drawOne());
 
 		return true;
+	}
+
+	trade(which: Char[] = []) {
+		const MAX_TRADES = 7;
+		const currentBench = this.benches.get(this.currentPlayerName());
+		console.log(which);
+
+		const toTrade = which.reduce((prev, char, i) => {
+			if (i >= MAX_TRADES) return prev;
+			if (!currentBench.hasTile(char)) return prev;
+
+			return [...prev, currentBench.useTile(char)];
+		}, []);
+		console.log(toTrade);
+
+		const tradedTiles = this.bag.swap(toTrade);
+
+		tradedTiles.forEach((tile) => currentBench.addTile(tile));
+
+		console.log(tradedTiles);
+
+		this.nextPlayer();
+	}
+
+	placeWord() {}
+
+	skip() {
+		this.nextPlayer();
 	}
 }
 

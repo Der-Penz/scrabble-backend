@@ -5,11 +5,17 @@ class Bench {
 	private owner: string;
 	private maxTiles: number;
 	private tilesOnHand: LetterTile[];
+	private points: number;
 
-	constructor(owner: string, tilesOnHand: LetterTile[], maxTiles : number = 7) {
+	constructor(
+		owner: string,
+		tilesOnHand: LetterTile[],
+		maxTiles: number = 7
+	) {
 		this.owner = owner;
 		this.maxTiles = maxTiles;
 		this.tilesOnHand = tilesOnHand.slice(0, this.maxTiles);
+		this.points = 0;
 	}
 
 	addTile(tile: LetterTile) {
@@ -23,10 +29,14 @@ class Bench {
 		return this.tilesOnHand.some((tile) => tile.getChar() === char);
 	}
 
-	useTile(char: Char) : LetterTile | null{
-		if(!this.hasTile(char)) return null;
+	useTile(char: Char): LetterTile | null {
+		if (!this.hasTile(char)) return null;
 
-		return this.tilesOnHand.find(tile => tile.getChar() === char);
+		const index = this.tilesOnHand.findIndex(
+			(tile) => tile.getChar() === char
+		);
+
+		return this.tilesOnHand.splice(index, 1)[0];
 	}
 
 	isFull() {
@@ -37,8 +47,16 @@ class Bench {
 		return this.tilesOnHand;
 	}
 
-	getOwner(){
+	getOwner() {
 		return this.owner;
+	}
+
+	getPoints() {
+		return this.points;
+	}
+
+	addPoints(newPoints) {
+		this.points += newPoints;
 	}
 }
 

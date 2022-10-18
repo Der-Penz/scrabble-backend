@@ -2,6 +2,8 @@ import express from 'express';
 import wsExpress from 'express-ws';
 import GameHandler from '../../GameHandler';
 import WSMessage from '../../class/WSMessage';
+import LetterTile, { getDefaultTile } from '../../class/LetterTile';
+import Char from '../../types/Char';
 
 const { app: wsServer } = wsExpress(express());
 
@@ -35,9 +37,28 @@ wsServer.ws('/:roomID', function (ws, req) {
 		}
 
 		//other actions
+		if (
+			roomToJoin.getPlayer(ws) !==
+			roomToJoin.getGame().currentPlayerName()
+		) {
+			return;
+		}
 
-		if (message.getAction() === 'game:next') {
-			roomToJoin.getGame().nextPlayer();
+		//actions
+		if (message.getAction() === 'game:move:skip') {
+			roomToJoin.getGame().skip();
+		}
+
+		if (message.getAction() === 'game:move:trade') {
+			const chars = message
+				.getContent()
+				.map((char) => char.toUpperCase()) as Char[];
+			console.log(chars);
+			try {
+				roomToJoin.getGame().trade(chars);
+			} catch (err) {
+				console.error(err);
+			}
 		}
 	});
 

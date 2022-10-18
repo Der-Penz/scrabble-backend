@@ -8,3 +8,7 @@ export type WSAction =
 	| 'message'
     | 'game:next'
 	| 'game:state'
+
+	| 'game:move:trade'
+	| 'game:move:skip'
+	| 'game:move:place'

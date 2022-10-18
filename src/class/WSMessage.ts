@@ -2,9 +2,9 @@ import { WSAction } from '../types/WSAction';
 
 class WSMessage {
 	private action: WSAction;
-	private content: object;
+	private content: any;
 
-	constructor(action: WSAction, content: object) {
+	constructor(action: WSAction, content: any) {
 		this.action = action;
 		this.content = content;
 	}
@@ -13,7 +13,7 @@ class WSMessage {
 		try {
 			const json = JSON.parse(msg);
 
-			return new WSMessage(json.action, json.message);
+			return new WSMessage(json.action, json.content);
 		} catch (err) {
 			return null;
 		}
@@ -21,6 +21,10 @@ class WSMessage {
 
 	getAction(): WSAction {
 		return this.action;
+	}
+
+	getContent() : any{
+		return this.content;
 	}
 
 	json() {
