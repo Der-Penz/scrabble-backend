@@ -49,14 +49,10 @@ class Board {
 				this.board[i][j] = getTileForNumber(
 					i,
 					j,
-					map[i].at(j) as unknown as number
+					parseInt(map[i].at(j))
 				);
 			}
-
-			console.log(this.board);
 		}
-
-		// console.log(this.board);
 	}
 
 	getBoard(): BoardTile[][] {

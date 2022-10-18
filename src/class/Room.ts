@@ -80,6 +80,7 @@ export default class Room extends LoggerClass {
 		this.gamestate = 'playing';
 		this.scrabbleGame = new Scrabble(this, [...this.players.values()]);
 		this.broadcastMessage(new WSMessage('game:started', {}));
+		this.getGame().skip();
 
 		return this;
 	}
