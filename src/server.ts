@@ -7,6 +7,8 @@ dotenv.config();
 import logRouter from './routes/middleware/logger';
 import apiRouter from './routes/api/apiRouter';
 import wsSubServer from './routes/ws/wsSubServer';
+import GameHandler from './GameHandler';
+import Room from './class/Room';
 
 export const { app } = wsExpress(express());
 
@@ -24,3 +26,8 @@ app.all('/*', (_, res) => {
 app.listen(process.env.PORT, () =>
 	log('->Running server on ', process.env.PORT)
 );
+
+//Debugging
+const room = new Room("debugging");
+log(room.getUUID(true))
+GameHandler.instance.addRoom(room);

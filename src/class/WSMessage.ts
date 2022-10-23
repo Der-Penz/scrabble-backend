@@ -15,6 +15,8 @@ class WSMessage {
 
 			return new WSMessage(json.action, json.content);
 		} catch (err) {
+			console.error('error during ws message parsing');
+			console.error(err);
 			return null;
 		}
 	}
@@ -23,7 +25,7 @@ class WSMessage {
 		return this.action;
 	}
 
-	getContent() : any{
+	getContent(): any {
 		return this.content;
 	}
 

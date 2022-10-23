@@ -4,6 +4,7 @@ import GameHandler from '../../GameHandler';
 import WSMessage from '../../class/WSMessage';
 import LetterTile, { getDefaultTile } from '../../class/LetterTile';
 import Char from '../../types/Char';
+import { PositionedLetterTile } from '../../class/BoardPosition';
 
 const { app: wsServer } = wsExpress(express());
 
@@ -26,6 +27,8 @@ wsServer.ws('/:roomID', function (ws, req) {
 			return;
 		}
 
+		console.log(`Incoming Action: ${message.getAction()}`);
+
 		if (!roomToJoin.isStarted()) {
 			if (roomToJoin.getHost() !== name) {
 				return;
@@ -36,7 +39,6 @@ wsServer.ws('/:roomID', function (ws, req) {
 			return;
 		}
 
-		//other actions
 		if (
 			roomToJoin.getPlayer(ws) !==
 			roomToJoin.getGame().currentPlayerName()
@@ -50,12 +52,37 @@ wsServer.ws('/:roomID', function (ws, req) {
 		}
 
 		if (message.getAction() === 'game:move:trade') {
-			const chars = message
-				.getContent()
-				.map((char) => char.toUpperCase()) as Char[];
-			console.log(chars);
 			try {
+				const chars = message
+					.getContent()
+					.map((char) => char.toUpperCase()) as Char[];
 				roomToJoin.getGame().trade(chars);
+			} catch (err) {
+				console.error(err);
+			}
+		}
+
+		if (message.getAction() === 'game:move:place') {
+			try {
+				const positionedTiles = message
+					.getContent()
+					.map(
+						(positionedTile) =>
+							new PositionedLetterTile(
+								positionedTile.x,
+								positionedTile.y,
+								getDefaultTile(
+									positionedTile.char.toUpperCase()
+								)
+							)
+					) as PositionedLetterTile[];
+				const response = roomToJoin
+					.getGame()
+					.placeWord(positionedTiles);
+
+				if (response) {
+					console.log(response);
+				}
 			} catch (err) {
 				console.error(err);
 			}

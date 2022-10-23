@@ -1,7 +1,10 @@
 import Char from '../types/Char';
+import { WordDirection } from '../types/WordDirection';
 import Bag from './Bag';
 import Bench from './Bench';
 import Board from './Board';
+import BoardPosition, { PositionedLetterTile } from './BoardPosition';
+import Dictionary from './Dictionary';
 import LetterTile from './LetterTile';
 import Room from './Room';
 import WSMessage from './WSMessage';
@@ -74,6 +77,57 @@ class Scrabble {
 		return true;
 	}
 
+	private getWordDirection(
+		positionedTiles: PositionedLetterTile[]
+	): WordDirection {
+		const baseX = positionedTiles[0].x;
+		const baseY = positionedTiles[0].y;
+
+		const allXSame = positionedTiles.every(
+			(posTiled) => posTiled.x === baseX
+		);
+		const allYSame = positionedTiles.every(
+			(posTiled) => posTiled.y === baseY
+		);
+
+		if (allXSame && !allYSame) {
+			return 'Vertical';
+		} else if (!allXSame && allYSame) {
+			return 'Horizontal';
+		} else if (!allXSame && !allYSame) {
+			return 'IllegalPlacment';
+		} else {
+			//if it a one letter placement just use vertical
+			return 'Horizontal';
+		}
+	}
+
+	private getWordStart(
+		positionedTiles: PositionedLetterTile[],
+		direction: WordDirection
+	): BoardPosition {
+		const key = direction === 'Horizontal' ? 'x' : 'y';
+
+		const lowest = positionedTiles.reduce((lowest, tile) => {
+			if (tile[key] < lowest[key]) {
+				return tile;
+			} else {
+				return lowest;
+			}
+		});
+
+		return lowest;
+	}
+
+	private sortPositiones(
+		positionedTiles: PositionedLetterTile[],
+		direction: WordDirection
+	) {
+		const key = direction === 'Horizontal' ? 'x' : 'y';
+
+		return positionedTiles.sort((a, b) => a[key] - b[key]);
+	}
+
 	trade(which: Char[] = []) {
 		const MAX_TRADES = 7;
 		const currentBench = this.benches.get(this.currentPlayerName());
@@ -96,7 +150,40 @@ class Scrabble {
 		this.nextPlayer();
 	}
 
-	placeWord() {}
+	placeWord(positionedTiles: PositionedLetterTile[]) {
+		const wordDirection = this.getWordDirection(positionedTiles);
+
+		if (wordDirection === 'IllegalPlacment') {
+			return 'IllegalPlacement';
+		}
+
+		const sortedpositions = this.sortPositiones(
+			positionedTiles,
+			wordDirection
+		);
+
+		let word = '';
+
+		const newlyTakenPlaces = new Set();
+
+		
+		for (const positiendTile of sortedpositions) {
+			if (this.board.isTileTaken(positiendTile.x, positiendTile.y)) {
+				return 'PlaceAlreadyTaken';
+			}
+
+			if (newlyTakenPlaces.has(`${positiendTile.x}x${positiendTile.y}`)) {
+				return 'TilesOnSamePlace';
+			}
+
+			newlyTakenPlaces.add(`${positiendTile.x}x${positiendTile.y}`);
+			word += positiendTile.tile.getChar();
+		}
+
+		if (!Dictionary.instance.isWordValid(word)) {
+			return 'InvalidWord';
+		}
+	}
 
 	skip() {
 		this.nextPlayer();

@@ -9,6 +9,7 @@ class GameHandler extends LoggerClass {
 
 	constructor() {
 		super('GameHandler');
+		
 		setInterval(() => {
 			this.openRooms.forEach((room) => {
 				if (room.isEmpty()) {

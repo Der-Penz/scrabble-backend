@@ -20,7 +20,7 @@ class BoardTile {
 	}
 
 	isTaken(): boolean {
-		return this.placeTile !== null;
+		return this.placedTile !== null;
 	}
 
 	getX() {
