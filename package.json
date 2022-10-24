@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"dev": "nodemon --exec ts-node src/server.ts",
+		"dev": "nodemon src/server.ts",
+		"debug" : "nodemon --inspect src/server.ts",
 		"build": "tsc && node src/server.js"
 	},
 	"keywords": [],
