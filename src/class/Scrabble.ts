@@ -102,21 +102,35 @@ class Scrabble {
 		}
 	}
 
-	private getWordStart(
-		positionedTiles: PositionedLetterTile[],
+	private getLowerTile(
+		position: BoardPosition,
 		direction: WordDirection
 	): BoardPosition {
 		const key = direction === 'Horizontal' ? 'x' : 'y';
+		console.log(position);
+		
+		if (
+			position[key] < 0 ||
+			!this.board.isTileTaken(position.x, position.y)
+		) {
+			return null;
+		}
 
-		const lowest = positionedTiles.reduce((lowest, tile) => {
-			if (tile[key] < lowest[key]) {
-				return tile;
-			} else {
-				return lowest;
-			}
-		});
-
-		return lowest;
+		if (direction === 'Horizontal') {
+			return (
+				this.getLowerTile(
+					new BoardPosition(position.x - 1, position.y),
+					direction
+				) || position
+			);
+		} else {
+			return (
+				this.getLowerTile(
+					new BoardPosition(position.x, position.y - 1),
+					direction
+				) || position
+			);
+		}
 	}
 
 	private sortPositiones(
@@ -151,38 +165,74 @@ class Scrabble {
 	}
 
 	placeWord(positionedTiles: PositionedLetterTile[]) {
-		const wordDirection = this.getWordDirection(positionedTiles);
+		const direction = this.getWordDirection(positionedTiles);
 
-		if (wordDirection === 'IllegalPlacment') {
+		if (direction === 'IllegalPlacment') {
 			return 'IllegalPlacement';
 		}
 
-		const sortedpositions = this.sortPositiones(
-			positionedTiles,
-			wordDirection
-		);
+		const sortedpositions = this.sortPositiones(positionedTiles, direction);
+
+		//get beginning of word
+		const startPos = this.getLowerTile(
+			sortedpositions[0] as BoardPosition,
+			direction
+		) || sortedpositions[0];
 
 		let word = '';
 
-		const newlyTakenPlaces = new Set();
-
+		//read the full word and check for errors
+		let currentPosition = startPos;
+		while (currentPosition !== null) {
+			const index = sortedpositions.findIndex((tile) =>
+				tile.equals(currentPosition)
+			);
+			console.log(currentPosition);
+			
 		
-		for (const positiendTile of sortedpositions) {
-			if (this.board.isTileTaken(positiendTile.x, positiendTile.y)) {
-				return 'PlaceAlreadyTaken';
+			//if you want to place the tile
+			if (index >= 0) {
+				const tileToBePlaced = sortedpositions.splice(index)[0];
+
+				//not already taken
+				if (
+					this.board.isTileTaken(tileToBePlaced.x, tileToBePlaced.y)
+				) {
+					return 'TileAleardyTaken';
+				}
+
+				word += tileToBePlaced.tile.getChar();
+			}
+			//if you relate to a already placed tile
+			else {
+				const tile = this.board.getTile(
+					currentPosition.x,
+					currentPosition.y
+				);
+
+				if (!tile.isTaken()) {
+					//end of word or gap
+					if(sortedpositions.length === 0){
+						//word end
+						break;
+					}else{
+						return 'GapInWord';
+					}
+				}
+
+				word += tile.getTile().getChar();
 			}
 
-			if (newlyTakenPlaces.has(`${positiendTile.x}x${positiendTile.y}`)) {
-				return 'TilesOnSamePlace';
+			//go one higer
+			if (direction === 'Horizontal') {
+				currentPosition = new BoardPosition(currentPosition.x + 1, currentPosition.y)
+			} else {
+				currentPosition = new BoardPosition(currentPosition.x, currentPosition.y + 1)
 			}
-
-			newlyTakenPlaces.add(`${positiendTile.x}x${positiendTile.y}`);
-			word += positiendTile.tile.getChar();
 		}
 
-		if (!Dictionary.instance.isWordValid(word)) {
-			return 'InvalidWord';
-		}
+		console.log(word);
+		
 	}
 
 	skip() {

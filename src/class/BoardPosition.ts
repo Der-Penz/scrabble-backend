@@ -8,6 +8,10 @@ class BoardPosition {
 		this.x = x;
 		this.y = y;
 	}
+
+	equals(other: BoardPosition) {
+		return this.x === other.x && this.y === other.y;
+	}
 }
 
 export class PositionedLetterTile extends BoardPosition {

@@ -68,10 +68,10 @@ class Board {
 	}
 
 	isTileTaken(x: number, y: number): boolean {
-		return this.getBoardTile(x, y).isTaken();
+		return this.getTile(x, y).isTaken();
 	}
 
-	getBoardTile(x, y): BoardTile {
+	getTile(x, y): BoardTile {
 		return this.board[x][y];
 	}
 
@@ -85,7 +85,7 @@ class Board {
 		const secondaryKey = horizontal ? 'y' : 'x';
 
 		for (let i = 0; i <= end[mainKey] - start[mainKey]; i++) {
-			const tile = this.getBoardTile(
+			const tile = this.getTile(
 				start[mainKey] + i,
 				start[secondaryKey]
 			);
