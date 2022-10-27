@@ -4,6 +4,7 @@ import Bag from './Bag';
 import Bench from './Bench';
 import Board from './Board';
 import BoardPosition, { PositionedLetterTile } from './BoardPosition';
+import BoardTile from './BoardTile';
 import Dictionary from './Dictionary';
 import LetterTile from './LetterTile';
 import Room from './Room';
@@ -12,7 +13,7 @@ import WSMessage from './WSMessage';
 class Scrabble {
 	private board: Board;
 	private benches: Map<string, Bench> = new Map();
-	private currentPlayer: number;
+	private currentPlayerIndex: number;
 	private bag: Bag;
 	private room: Room;
 
@@ -20,7 +21,7 @@ class Scrabble {
 		this.board = new Board();
 		this.bag = new Bag(fillMap);
 		this.room = room;
-		this.currentPlayer = this.benches.size - 1;
+		this.currentPlayerIndex = this.benches.size - 1;
 
 		players.forEach((player) =>
 			this.benches.set(player, new Bench(player, this.bag.drawMany(1)))
@@ -28,13 +29,18 @@ class Scrabble {
 	}
 
 	currentPlayerName(): string {
-		return [...this.benches.keys()][this.currentPlayer];
+		return [...this.benches.keys()][this.currentPlayerIndex];
+	}
+
+	private currentBench(): Bench {
+		return this.benches.get(this.currentPlayerName());
 	}
 
 	private nextPlayer() {
-		this.currentPlayer = (this.currentPlayer + 1) % this.benches.size;
+		this.currentPlayerIndex =
+			(this.currentPlayerIndex + 1) % this.benches.size;
 
-		const bench = this.benches.get(this.currentPlayerName());
+		const bench = this.currentBench();
 		const playerName = this.currentPlayerName();
 
 		while (!bench.isFull()) {
@@ -54,7 +60,6 @@ class Scrabble {
 
 	private broadcastGameState() {
 		const playerName = this.currentPlayerName();
-		const bench = this.benches.get(playerName);
 
 		//send all the new board and the bag
 		this.room.broadcastMessage(
@@ -66,6 +71,9 @@ class Scrabble {
 		);
 	}
 
+	/**
+	 * @deprecated
+	 */
 	private drawTile(): boolean {
 		const playerName = this.currentPlayerName();
 
@@ -107,8 +115,7 @@ class Scrabble {
 		direction: WordDirection
 	): BoardPosition {
 		const key = direction === 'Horizontal' ? 'x' : 'y';
-		console.log(position);
-		
+
 		if (
 			position[key] < 0 ||
 			!this.board.isTileTaken(position.x, position.y)
@@ -139,13 +146,19 @@ class Scrabble {
 	) {
 		const key = direction === 'Horizontal' ? 'x' : 'y';
 
-		return positionedTiles.sort((a, b) => a[key] - b[key]);
+		positionedTiles.sort((a, b) => a[key] - b[key]);
+
+		//filter out duplicates
+		positionedTiles = positionedTiles.filter(
+			(tile, i, self) => i === self.findIndex((t) => tile.equals(t))
+		);
+
+		return positionedTiles;
 	}
 
 	trade(which: Char[] = []) {
 		const MAX_TRADES = 7;
 		const currentBench = this.benches.get(this.currentPlayerName());
-		console.log(which);
 
 		const toTrade = which.reduce((prev, char, i) => {
 			if (i >= MAX_TRADES) return prev;
@@ -153,13 +166,10 @@ class Scrabble {
 
 			return [...prev, currentBench.useTile(char)];
 		}, []);
-		console.log(toTrade);
 
 		const tradedTiles = this.bag.swap(toTrade);
 
 		tradedTiles.forEach((tile) => currentBench.addTile(tile));
-
-		console.log(tradedTiles);
 
 		this.nextPlayer();
 	}
@@ -171,28 +181,47 @@ class Scrabble {
 			return 'IllegalPlacement';
 		}
 
-		const sortedpositions = this.sortPositiones(positionedTiles, direction);
+		positionedTiles = this.sortPositiones(positionedTiles, direction);
 
 		//get beginning of word
-		const startPos = this.getLowerTile(
-			sortedpositions[0] as BoardPosition,
-			direction
-		) || sortedpositions[0];
+		const startPos =
+			this.getLowerTile(
+				direction === 'Horizontal'
+					? new BoardPosition(
+							positionedTiles[0].x - 1,
+							positionedTiles[0].y
+					  )
+					: new BoardPosition(
+							positionedTiles[0].x,
+							positionedTiles[0].y - 1
+					  ),
+				direction
+			) || positionedTiles[0];
 
 		let word = '';
+		let nextToAlreadyPlacedTile = false;
+		const wordTiles: PositionedLetterTile[] = [];
 
 		//read the full word and check for errors
 		let currentPosition = startPos;
+		let endPos = startPos;
 		while (currentPosition !== null) {
-			const index = sortedpositions.findIndex((tile) =>
+			const index = positionedTiles.findIndex((tile) =>
 				tile.equals(currentPosition)
 			);
-			console.log(currentPosition);
-			
-		
+
 			//if you want to place the tile
 			if (index >= 0) {
-				const tileToBePlaced = sortedpositions.splice(index)[0];
+				const tileToBePlaced = positionedTiles.splice(index, 1)[0];
+
+				if (
+					!this.board.positionInBounds(
+						tileToBePlaced.x,
+						tileToBePlaced.y
+					)
+				) {
+					return 'OutOfBoard';
+				}
 
 				//not already taken
 				if (
@@ -202,6 +231,8 @@ class Scrabble {
 				}
 
 				word += tileToBePlaced.tile.getChar();
+				wordTiles.push(tileToBePlaced);
+				endPos = currentPosition;
 			}
 			//if you relate to a already placed tile
 			else {
@@ -210,29 +241,69 @@ class Scrabble {
 					currentPosition.y
 				);
 
-				if (!tile.isTaken()) {
+				if (tile === null || !tile.isTaken()) {
 					//end of word or gap
-					if(sortedpositions.length === 0){
+					if (positionedTiles.length === 0) {
 						//word end
 						break;
-					}else{
+					} else {
 						return 'GapInWord';
 					}
 				}
 
 				word += tile.getTile().getChar();
+				endPos = currentPosition;
+				nextToAlreadyPlacedTile = true;
 			}
 
 			//go one higer
 			if (direction === 'Horizontal') {
-				currentPosition = new BoardPosition(currentPosition.x + 1, currentPosition.y)
+				currentPosition = new BoardPosition(
+					currentPosition.x + 1,
+					currentPosition.y
+				);
 			} else {
-				currentPosition = new BoardPosition(currentPosition.x, currentPosition.y + 1)
+				currentPosition = new BoardPosition(
+					currentPosition.x,
+					currentPosition.y + 1
+				);
 			}
 		}
 
-		console.log(word);
-		
+		if (!nextToAlreadyPlacedTile) {
+			return 'NotConnected';
+		}
+
+		if (word.length <= 1) {
+			return 'WordToShort';
+		}
+
+		if (!Dictionary.instance.isWordValid(word)) {
+			return 'InvalidWord';
+		}
+
+		//remove tiles from players bench
+		if (
+			!wordTiles.every((positionedTiles) =>
+				this.currentBench().hasTile(positionedTiles.tile.getChar())
+			)
+		) {
+			return 'TilesNotOnHand';
+		}
+
+		wordTiles.forEach((positionedTile) =>
+			this.currentBench().useTile(positionedTile.tile.getChar())
+		);
+
+		//place tiles on the board
+		this.board.placeWord(wordTiles);
+		this.room.log(`placing word ${word}`, false);
+
+		//add the points to the player
+		const points = this.board.calculatePoints(startPos, endPos); //ERROR
+		this.currentBench().addPoints(points);
+
+		this.nextPlayer();
 	}
 
 	skip() {

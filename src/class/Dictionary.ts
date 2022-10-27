@@ -10,6 +10,9 @@ class Dictionary {
 
 	constructor() {
 		this.loadWords();
+		this.allWords = [];
+		this.allreadyInValidWords = [];
+		this.allreadyValidWords = [];
 	}
 
 	async loadWords() {

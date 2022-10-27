@@ -36,12 +36,14 @@ function getTileForNumber(x: number, y: number, emoji: number) {
 
 class Board {
 	private board: BoardTile[][];
+	private size: number;
 
 	constructor(
 		size: number = 15,
 		map: string[] = DEFAULT_BOARD_MULTIPLIER_MAP
 	) {
 		this.board = new Array(size);
+		this.size = size;
 
 		for (let i = 0; i < size; i++) {
 			this.board[i] = new Array(size);
@@ -53,6 +55,9 @@ class Board {
 				);
 			}
 		}
+
+		// this.placeTile(new PositionedLetterTile(0, 0, getDefaultTile('R')));
+		// this.placeTile(new PositionedLetterTile(0, 1, getDefaultTile('A')));
 	}
 
 	getBoard(): BoardTile[][] {
@@ -60,19 +65,45 @@ class Board {
 	}
 
 	placeWord(tiles: PositionedLetterTile[]): void {
-		tiles.forEach(this.placeTile);
+		let worked = true;
+		tiles.forEach((tile) => {
+			const placed = this.placeTile(tile);
+			if (worked && !placed) {
+				worked = false;
+			}
+		});
 	}
 
-	placeTile(tile: PositionedLetterTile): void {
+	placeTile(tile: PositionedLetterTile): boolean {
+		if (!this.positionInBounds(tile.x, tile.y)) {
+			return false;
+		}
 		this.board[tile.x][tile.y].placeTile(tile.tile);
+		return true;
 	}
 
-	isTileTaken(x: number, y: number): boolean {
+	isTileTaken(x: number, y: number): boolean | null {
+		if (!this.positionInBounds(x, y)) {
+			return null;
+		}
 		return this.getTile(x, y).isTaken();
 	}
 
-	getTile(x, y): BoardTile {
+	isEmpty() {
+		return this.board.every((column) =>
+			column.every((tile) => !tile.isTaken() === true)
+		);
+	}
+
+	getTile(x, y): BoardTile | null {
+		if (!this.positionInBounds(x, y)) {
+			return null;
+		}
 		return this.board[x][y];
+	}
+
+	positionInBounds(x: number, y: number): boolean {
+		return x >= 0 && x < this.size && y >= 0 && y < this.size;
 	}
 
 	calculatePoints(start: BoardPosition, end: BoardPosition): number {
@@ -84,11 +115,13 @@ class Board {
 		const mainKey = horizontal ? 'x' : 'y';
 		const secondaryKey = horizontal ? 'y' : 'x';
 
-		for (let i = 0; i <= end[mainKey] - start[mainKey]; i++) {
-			const tile = this.getTile(
-				start[mainKey] + i,
-				start[secondaryKey]
-			);
+		for (let i = start[mainKey]; i <= end[mainKey]; i++) {
+			const tile = horizontal
+				? this.getTile(i, start[secondaryKey])
+				: this.getTile(start[secondaryKey], i);
+			if (tile === null) {
+				continue;
+			}
 			const letterTile = tile.getTile();
 			if (tile instanceof MultiplierBoardTile) {
 				const multipliers = (
