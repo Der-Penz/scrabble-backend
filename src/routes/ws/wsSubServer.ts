@@ -96,7 +96,7 @@ wsServer.ws('/:roomID', function (ws, req) {
 		const isEmpty = roomToJoin.leaveRoom(ws);
 
 		if (isEmpty) {
-			GameHandler.instance.deleteRoom(roomToJoin.getUUID(), 10000);
+			GameHandler.instance.deleteRoom(roomToJoin.getUUID());
 		}
 	});
 });
