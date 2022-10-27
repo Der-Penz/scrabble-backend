@@ -1,34 +1,11 @@
-interface JsonResponseType {
-	json: () => object;
-	string: () => string;
-}
-
-export class JsonErrorRespone implements JsonResponseType {
-	private error: Error;
-	private errorMessage: string;
-
-	constructor(error: Error, errorMessage: string) {
-		this.error = error;
-		this.errorMessage = errorMessage;
-	}
-
-	json() {
-		return { error: this.error, errorMessage: this.errorMessage };
-	}
-
-	string() {
-		return JSON.stringify(this.json());
-	}
-}
-
-export class JsonResponse implements JsonResponseType {
-	private content: object | string;
+export class JsonResponse {
+	protected content: object;
 
 	constructor(content: object) {
 		this.content = content;
 	}
 
-	json() {
+	json(): object {
 		return { content: this.content };
 	}
 

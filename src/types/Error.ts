@@ -1,5 +1,4 @@
-export type ShortError =
-	| 'Client Error'
-	| 'Server Error'
-	| 'Unautherized'
-	| 'Invalid Code';
+import { PlacingError } from './PlacingError';
+import { ShortError } from './ShortError';
+
+export type Error = ShortError | PlacingError;
