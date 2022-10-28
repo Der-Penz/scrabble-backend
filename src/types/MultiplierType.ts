@@ -1,0 +1,1 @@
+export type MultiplierType = 'WORD' | 'LETTER';

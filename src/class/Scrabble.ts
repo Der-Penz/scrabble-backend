@@ -236,7 +236,7 @@ class Scrabble {
 							x: tileToBePlaced.x,
 							y: tileToBePlaced.y,
 							tile: tileToBePlaced.tile.getChar(),
-							size: this.board.getSize(),
+							size: Board.SIZE,
 						}
 					);
 				}
@@ -316,15 +316,14 @@ class Scrabble {
 		}
 
 		const key = direction === 'Horizontal' ? 'x' : 'y';
-		const center = (this.board.getSize() + 1) / 2;
 		if (
 			this.board.isEmpty() &&
-			!(endPos[key] >= center && startPos[key] <= center)
+			!(endPos[key] >= Board.CENTER && startPos[key] <= Board.CENTER)
 		) {
 			return new JsonErrorResponse(
 				'NotCentered',
 				'First word needs to go through the center position',
-				{ x: center, y: center }
+				{ x: Board.CENTER, y: Board.CENTER }
 			);
 		}
 

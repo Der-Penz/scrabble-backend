@@ -1,71 +1,46 @@
 import BoardPosition, { PositionedLetterTile } from './BoardPosition';
-import BoardTile, { MultiplierBoardTile } from './BoardTile';
-
-const DEFAULT_BOARD_MULTIPLIER_MAP = [
-	'311411131114113',
-	'121115111511121',
-	'112111414111211',
-	'411211141112114',
-	'111121111121111',
-	'151115111511151',
-	'114111414111411',
-	'311411121114113', //<--- middle
-	'114111414111411',
-	'151115111511151',
-	'111121111121111',
-	'411211141112114',
-	'112111414111211',
-	'121115111511121',
-	'311411131114113',
-];
-
-function getTileForNumber(x: number, y: number, emoji: number) {
-	switch (emoji) {
-		case 1:
-			return new BoardTile(x, y);
-		case 2:
-			return new MultiplierBoardTile(x, y, 2, 'WORD');
-		case 3:
-			return new MultiplierBoardTile(x, y, 3, 'WORD');
-		case 4:
-			return new MultiplierBoardTile(x, y, 2, 'LETTER');
-		case 5:
-			return new MultiplierBoardTile(x, y, 3, 'LETTER');
-	}
-}
+import BoardTile from './BoardTile';
+import MultiplierBoardTile from './MultiplierBoardTile';
 
 class Board {
+	static readonly DEFAULT_MAP = [
+		'311411131114113',
+		'121115111511121',
+		'112111414111211',
+		'411211141112114',
+		'111121111121111',
+		'151115111511151',
+		'114111414111411',
+		'311411121114113',
+		'114111414111411',
+		'151115111511151',
+		'111121111121111',
+		'411211141112114',
+		'112111414111211',
+		'121115111511121',
+		'311411131114113',
+	];
+	static readonly SIZE = 15;
+	static readonly CENTER = (Board.SIZE + 1) / 2;
 	private board: BoardTile[][];
-	private size: number;
 
-	constructor(
-		size: number = 15,
-		map: string[] = DEFAULT_BOARD_MULTIPLIER_MAP
-	) {
-		this.board = new Array(size);
-		this.size = size;
+	constructor(boardMap: string[] = Board.DEFAULT_MAP) {
+		this.board = new Array(Board.SIZE);
 
-		for (let i = 0; i < size; i++) {
-			this.board[i] = new Array(size);
-			for (let j = 0; j < size; j++) {
-				this.board[i][j] = getTileForNumber(
+		for (let i = 0; i < Board.SIZE; i++) {
+			this.board[i] = new Array(Board.SIZE);
+			for (let j = 0; j < Board.SIZE; j++) {
+				this.board[i][j] = BoardTile.TILE_FOR_NUMBER(
 					i,
 					j,
-					parseInt(map[i].at(j))
+					parseInt(boardMap[i].at(j))
 				);
 			}
 		}
-
-		// this.placeTile(new PositionedLetterTile(0, 0, getDefaultTile('R')));
-		// this.placeTile(new PositionedLetterTile(0, 1, getDefaultTile('A')));
 	}
 
 	getBoard(): BoardTile[][] {
 		return this.board;
-	}
-
-	getSize() {
-		return this.size;
 	}
 
 	placeWord(tiles: PositionedLetterTile[]): void {
@@ -107,7 +82,7 @@ class Board {
 	}
 
 	positionInBounds(x: number, y: number): boolean {
-		return x >= 0 && x < this.size && y >= 0 && y < this.size;
+		return x >= 0 && x < Board.SIZE && y >= 0 && y < Board.SIZE;
 	}
 
 	calculatePoints(start: BoardPosition, end: BoardPosition): number {
@@ -134,10 +109,10 @@ class Board {
 
 				if (multipliers === null) {
 					points += letterTile.getPoints();
-				} else if (multipliers.multiplierType === 'LETTER') {
-					points += letterTile.getPoints() * multipliers.multiplier;
-				} else if (multipliers.multiplierType === 'WORD') {
-					wordMultiplier += multipliers.multiplier;
+				} else if (multipliers.type === 'LETTER') {
+					points += letterTile.getPoints() * multipliers.factor;
+				} else if (multipliers.type === 'WORD') {
+					wordMultiplier += multipliers.factor;
 					points += letterTile.getPoints();
 				}
 			} else {
