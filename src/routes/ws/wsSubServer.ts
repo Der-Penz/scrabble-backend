@@ -80,9 +80,15 @@ wsServer.ws('/:roomID', function (ws, req) {
 					.getGame()
 					.placeWord(positionedTiles);
 
-				if (response) {
-					console.log(response);
+				if (!response) {
+					return;
 				}
+
+				roomToJoin.log(response.string(), false);
+				roomToJoin.sendMessage(
+					new WSMessage('game:move:place', response.json()),
+					name
+				);
 			} catch (err) {
 				console.error(err);
 			}

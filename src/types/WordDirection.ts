@@ -1,1 +1,1 @@
-export type WordDirection = 'Horizontal' | 'Vertical' | 'IllegalPlacment';
+export type WordDirection = 'Horizontal' | 'Vertical' | 'IllegalPlacement';

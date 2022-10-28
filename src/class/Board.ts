@@ -64,6 +64,10 @@ class Board {
 		return this.board;
 	}
 
+	getSize() {
+		return this.size;
+	}
+
 	placeWord(tiles: PositionedLetterTile[]): void {
 		let worked = true;
 		tiles.forEach((tile) => {
@@ -126,7 +130,7 @@ class Board {
 			if (tile instanceof MultiplierBoardTile) {
 				const multipliers = (
 					tile as MultiplierBoardTile
-				).useMultipier();
+				).useMultiplier();
 
 				if (multipliers === null) {
 					points += letterTile.getPoints();

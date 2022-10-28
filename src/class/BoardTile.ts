@@ -39,9 +39,9 @@ class BoardTile {
 export type MultiplierType = 'WORD' | 'LETTER';
 
 export class MultiplierBoardTile extends BoardTile {
-	private multiplier: number;
+	private factor: number;
 	private multiplierType: MultiplierType;
-	private usedMultiplier: boolean;
+	private used: boolean;
 
 	constructor(
 		x: number,
@@ -50,25 +50,26 @@ export class MultiplierBoardTile extends BoardTile {
 		multiplierType: MultiplierType
 	) {
 		super(x, y);
-		this.multiplier = multiplier;
+		this.factor = multiplier;
 		this.multiplierType = multiplierType;
-		this.usedMultiplier = false;
+		this.used = false;
 	}
 
-	useMultipier(): {
+	useMultiplier(): {
 		multiplier: number;
 		multiplierType: MultiplierType;
 	} | null {
 		if (this.isAlreadyUsed()) return null;
 
+		this.used = true;
 		return {
-			multiplier: this.multiplier,
+			multiplier: this.factor,
 			multiplierType: this.multiplierType,
 		};
 	}
 
 	isAlreadyUsed(): boolean {
-		return this.usedMultiplier;
+		return this.used;
 	}
 }
 

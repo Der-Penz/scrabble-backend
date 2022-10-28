@@ -1,7 +1,7 @@
 import { Error } from '../types/Error';
 import { JsonResponse } from './JsonResponse';
 
-class JsonErrorRespone extends JsonResponse {
+class JsonErrorResponse extends JsonResponse {
 	private error: Error;
 	private errorMessage: string;
 
@@ -19,4 +19,4 @@ class JsonErrorRespone extends JsonResponse {
 		};
 	}
 }
-export default JsonErrorRespone;
+export default JsonErrorResponse;

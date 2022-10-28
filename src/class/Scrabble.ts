@@ -1,12 +1,11 @@
+import JsonErrorResponse from '../interface/JsonErrorResponse';
 import Char from '../types/Char';
 import { WordDirection } from '../types/WordDirection';
 import Bag from './Bag';
 import Bench from './Bench';
 import Board from './Board';
 import BoardPosition, { PositionedLetterTile } from './BoardPosition';
-import BoardTile from './BoardTile';
 import Dictionary from './Dictionary';
-import LetterTile from './LetterTile';
 import Room from './Room';
 import WSMessage from './WSMessage';
 
@@ -24,7 +23,10 @@ class Scrabble {
 		this.currentPlayerIndex = this.benches.size - 1;
 
 		players.forEach((player) =>
-			this.benches.set(player, new Bench(player, this.bag.drawMany(1)))
+			this.benches.set(
+				player,
+				new Bench(player, this.bag.drawMany(Bench.BASE_MAX_TILES))
+			)
 		);
 	}
 
@@ -59,14 +61,18 @@ class Scrabble {
 	}
 
 	private broadcastGameState() {
-		const playerName = this.currentPlayerName();
+		const players = {};
+		this.benches.forEach((bench, name) => {
+			players[name] = bench.getPoints();
+		});
 
 		//send all the new board and the bag
 		this.room.broadcastMessage(
 			new WSMessage('game:state', {
 				bag: this.bag,
 				board: this.board.getBoard(),
-				currentPlayer: playerName,
+				currentPlayer: this.currentPlayerName(),
+				players: players,
 			})
 		);
 	}
@@ -103,7 +109,7 @@ class Scrabble {
 		} else if (!allXSame && allYSame) {
 			return 'Horizontal';
 		} else if (!allXSame && !allYSame) {
-			return 'IllegalPlacment';
+			return 'IllegalPlacement';
 		} else {
 			//if it a one letter placement just use vertical
 			return 'Horizontal';
@@ -140,7 +146,7 @@ class Scrabble {
 		}
 	}
 
-	private sortPositiones(
+	private sortPositions(
 		positionedTiles: PositionedLetterTile[],
 		direction: WordDirection
 	) {
@@ -177,11 +183,14 @@ class Scrabble {
 	placeWord(positionedTiles: PositionedLetterTile[]) {
 		const direction = this.getWordDirection(positionedTiles);
 
-		if (direction === 'IllegalPlacment') {
-			return 'IllegalPlacement';
+		if (direction === 'IllegalPlacement') {
+			return new JsonErrorResponse(
+				'IllegalPlacement',
+				'Tiles must be placed in the same row or column to form one word'
+			);
 		}
 
-		positionedTiles = this.sortPositiones(positionedTiles, direction);
+		positionedTiles = this.sortPositions(positionedTiles, direction);
 
 		//get beginning of word
 		const startPos =
@@ -220,14 +229,35 @@ class Scrabble {
 						tileToBePlaced.y
 					)
 				) {
-					return 'OutOfBoard';
+					return new JsonErrorResponse(
+						'OutOfBoard',
+						'Tile index is out of the boards bounds',
+						{
+							x: tileToBePlaced.x,
+							y: tileToBePlaced.y,
+							tile: tileToBePlaced.tile.getChar(),
+							size: this.board.getSize(),
+						}
+					);
 				}
 
 				//not already taken
 				if (
 					this.board.isTileTaken(tileToBePlaced.x, tileToBePlaced.y)
 				) {
-					return 'TileAleardyTaken';
+					return new JsonErrorResponse(
+						'BoardPlaceTaken',
+						'On the selected indices is already a tile',
+						{
+							x: tileToBePlaced.x,
+							y: tileToBePlaced.y,
+							tile: tileToBePlaced.tile.getChar(),
+							placedTile: this.board
+								.getTile(tileToBePlaced.x, tileToBePlaced.y)
+								.getTile()
+								.getChar(),
+						}
+					);
 				}
 
 				word += tileToBePlaced.tile.getChar();
@@ -247,7 +277,14 @@ class Scrabble {
 						//word end
 						break;
 					} else {
-						return 'GapInWord';
+						return new JsonErrorResponse(
+							'GapInWord',
+							'Word has a gap in it which makes it invalid',
+							{
+								x: currentPosition.x,
+								y: currentPosition.y,
+							}
+						);
 					}
 				}
 
@@ -256,7 +293,7 @@ class Scrabble {
 				nextToAlreadyPlacedTile = true;
 			}
 
-			//go one higer
+			//go one higher
 			if (direction === 'Horizontal') {
 				currentPosition = new BoardPosition(
 					currentPosition.x + 1,
@@ -270,25 +307,46 @@ class Scrabble {
 			}
 		}
 
-		if (!nextToAlreadyPlacedTile) {
-			return 'NotConnected';
-		}
-
-		if (word.length <= 1) {
-			return 'WordToShort';
-		}
-
 		if (!Dictionary.instance.isWordValid(word)) {
-			return 'InvalidWord';
+			return new JsonErrorResponse(
+				'InvalidWord',
+				'Word is not a official allowed Scrabble word',
+				{ word: word }
+			);
+		}
+
+		const key = direction === 'Horizontal' ? 'x' : 'y';
+		const center = (this.board.getSize() + 1) / 2;
+		if (
+			this.board.isEmpty() &&
+			!(endPos[key] >= center && startPos[key] <= center)
+		) {
+			return new JsonErrorResponse(
+				'NotCentered',
+				'First word needs to go through the center position',
+				{ x: center, y: center }
+			);
+		}
+
+		if (!nextToAlreadyPlacedTile && !this.board.isEmpty()) {
+			return new JsonErrorResponse(
+				'NotConnected',
+				'Word is not connected to existing words',
+				{ word: word }
+			);
 		}
 
 		//remove tiles from players bench
 		if (
-			!wordTiles.every((positionedTiles) =>
-				this.currentBench().hasTile(positionedTiles.tile.getChar())
+			!this.currentBench().hasTiles(
+				wordTiles.map((wordTile) => wordTile.tile.getChar())
 			)
 		) {
-			return 'TilesNotOnHand';
+			return new JsonErrorResponse(
+				'TileNotOnHand',
+				'Tile or Tiles are missing in your bench to create the word',
+				{ bench: this.currentBench().getBench() }
+			);
 		}
 
 		wordTiles.forEach((positionedTile) =>
@@ -300,7 +358,7 @@ class Scrabble {
 		this.room.log(`placing word ${word}`, false);
 
 		//add the points to the player
-		const points = this.board.calculatePoints(startPos, endPos); //ERROR
+		const points = this.board.calculatePoints(startPos, endPos);
 		this.currentBench().addPoints(points);
 
 		this.nextPlayer();

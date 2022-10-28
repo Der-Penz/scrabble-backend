@@ -1,8 +1,9 @@
 export type PlacingError =
-	| 'IllegalPlacment'
+	| 'IllegalPlacement'
 	| 'InvalidWord'
 	| 'NotConnected'
 	| 'GapInWord'
 	| 'OutOfBoard'
 	| 'BoardPlaceTaken'
-	| 'TileNotOnHand';
+	| 'TileNotOnHand'
+	| 'NotCentered';
