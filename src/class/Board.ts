@@ -1,6 +1,8 @@
-import BoardPosition, { PositionedLetterTile } from './BoardPosition';
+import BoardPosition from './BoardPosition';
+import PositionedLetterTile from './PositionedLetterTile';
 import BoardTile from './BoardTile';
 import MultiplierBoardTile from './MultiplierBoardTile';
+import { getBoardTileForNumber } from './Helpers';
 
 class Board {
 	static readonly DEFAULT_MAP = [
@@ -30,7 +32,7 @@ class Board {
 		for (let i = 0; i < Board.SIZE; i++) {
 			this.board[i] = new Array(Board.SIZE);
 			for (let j = 0; j < Board.SIZE; j++) {
-				this.board[i][j] = BoardTile.TILE_FOR_NUMBER(
+				this.board[i][j] = getBoardTileForNumber(
 					i,
 					j,
 					parseInt(boardMap[i].at(j))

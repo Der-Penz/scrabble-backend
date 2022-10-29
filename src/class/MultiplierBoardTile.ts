@@ -1,5 +1,5 @@
-import { MultiplierType } from '../types/MultiplierType';
-import { BoardTile } from './BoardTile';
+import MultiplierType from '../types/MultiplierType';
+import BoardTile from './BoardTile';
 
 class MultiplierBoardTile extends BoardTile {
 	private factor: number;

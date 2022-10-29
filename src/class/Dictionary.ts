@@ -4,15 +4,15 @@ import path from 'path';
 class Dictionary {
 	static instance: Dictionary = new Dictionary();
 	private allWords: string[];
-	private allreadyValidWords: string[];
-	private allreadyInValidWords: string[];
+	private alreadyValidWords: string[];
+	private alreadyInValidWords: string[];
 	private charToIndexMap = new Map<string, number>();
 
 	constructor() {
 		this.loadWords();
 		this.allWords = [];
-		this.allreadyInValidWords = [];
-		this.allreadyValidWords = [];
+		this.alreadyInValidWords = [];
+		this.alreadyValidWords = [];
 	}
 
 	async loadWords() {
@@ -29,9 +29,9 @@ class Dictionary {
 	isWordValid(word: string): boolean {
 		word = word.toUpperCase();
 
-		if (this.allreadyValidWords.includes(word)) {
+		if (this.alreadyValidWords.includes(word)) {
 			return true;
-		} else if (this.allreadyInValidWords.includes(word)) {
+		} else if (this.alreadyInValidWords.includes(word)) {
 			return false;
 		} else if (
 			this.allWords.includes(
@@ -39,11 +39,11 @@ class Dictionary {
 				this.charToIndexMap.get(word.charAt(0))
 			)
 		) {
-			this.allreadyValidWords.push(word);
+			this.alreadyValidWords.push(word);
 			return true;
 		}
 
-		this.allreadyInValidWords.push(word);
+		this.alreadyInValidWords.push(word);
 		return false;
 	}
 }

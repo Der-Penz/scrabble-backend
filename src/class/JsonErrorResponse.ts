@@ -1,5 +1,5 @@
-import { Error } from '../types/Error';
-import { JsonResponse } from './JsonResponse';
+import Error from '../types/Error';
+import JsonResponse from './JsonResponse';
 
 class JsonErrorResponse extends JsonResponse {
 	private error: Error;

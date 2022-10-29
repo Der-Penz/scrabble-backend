@@ -1,10 +1,11 @@
-import JsonErrorResponse from '../interface/JsonErrorResponse';
+import JsonErrorResponse from './JsonErrorResponse';
+import WordDirection from '../types/WordDirection';
 import Char from '../types/Char';
-import { WordDirection } from '../types/WordDirection';
 import Bag from './Bag';
 import Bench from './Bench';
 import Board from './Board';
-import BoardPosition, { PositionedLetterTile } from './BoardPosition';
+import BoardPosition from './BoardPosition';
+import PositionedLetterTile from './PositionedLetterTile';
 import Dictionary from './Dictionary';
 import Room from './Room';
 import WSMessage from './WSMessage';

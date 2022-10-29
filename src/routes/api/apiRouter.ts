@@ -1,6 +1,6 @@
 import express from 'express';
 import GameHandler from '../../GameHandler';
-import { JsonResponse } from '../../interface/JsonResponse';
+import JsonResponse from '../../class/JsonResponse';
 import Room from '../../class/Room';
 
 const apiRouter = express.Router();

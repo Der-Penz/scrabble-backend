@@ -1,4 +1,4 @@
-import { WSAction } from '../types/WSAction';
+import WSAction from '../types/WSAction';
 
 class WSMessage {
 	private action: WSAction;

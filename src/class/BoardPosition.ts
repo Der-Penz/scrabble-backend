@@ -1,6 +1,4 @@
-import LetterTile from './LetterTile';
-
-class BoardPosition {
+export class BoardPosition {
 	readonly x: number;
 	readonly y: number;
 
@@ -11,15 +9,6 @@ class BoardPosition {
 
 	equals(other: BoardPosition) {
 		return this.x === other.x && this.y === other.y;
-	}
-}
-
-export class PositionedLetterTile extends BoardPosition {
-	tile: LetterTile;
-
-	constructor(x: number, y: number, tile: LetterTile) {
-		super(x, y);
-		this.tile = tile;
 	}
 }
 

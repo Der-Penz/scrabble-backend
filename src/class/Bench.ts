@@ -1,5 +1,6 @@
 import Char from '../types/Char';
-import LetterTile, { JokerLetterTile } from './LetterTile';
+import JokerLetterTile from './JokerLetterTile';
+import LetterTile from './LetterTile';
 
 class Bench {
 	static BASE_MAX_TILES = 7;

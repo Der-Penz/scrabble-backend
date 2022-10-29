@@ -1,1 +1,3 @@
-export type Gamestate = 'playing' | 'waiting';
+type GameState = 'playing' | 'waiting';
+
+export default GameState;

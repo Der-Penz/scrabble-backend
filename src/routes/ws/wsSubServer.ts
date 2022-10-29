@@ -2,9 +2,11 @@ import express from 'express';
 import wsExpress from 'express-ws';
 import GameHandler from '../../GameHandler';
 import WSMessage from '../../class/WSMessage';
-import LetterTile, { getDefaultTile } from '../../class/LetterTile';
+import LetterTile from '../../class/LetterTile';
+import JokerLetterTile from '../../class/JokerLetterTile';
 import Char from '../../types/Char';
-import { PositionedLetterTile } from '../../class/BoardPosition';
+import PositionedLetterTile from '../../class/PositionedLetterTile';
+import { getLetterTile } from '../../class/Helpers';
 
 const { app: wsServer } = wsExpress(express());
 
@@ -71,8 +73,8 @@ wsServer.ws('/:roomID', function (ws, req) {
 							new PositionedLetterTile(
 								positionedTile.x,
 								positionedTile.y,
-								getDefaultTile(
-									positionedTile.char.toUpperCase()
+								getLetterTile(
+									positionedTile.char.toUpperCase() as Char
 								)
 							)
 					) as PositionedLetterTile[];

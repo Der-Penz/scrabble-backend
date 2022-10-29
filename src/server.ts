@@ -28,6 +28,6 @@ app.listen(process.env.PORT, () =>
 );
 
 //Debugging
-const room = new Room("debugging");
-log(room.getUUID(true))
+const room = new Room('debugging');
+log(room.getUUID(true));
 GameHandler.instance.addRoom(room);

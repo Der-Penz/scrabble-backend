@@ -1,15 +1,16 @@
 import LoggerClass from './class/LoggerClass';
 import Room from './class/Room';
 
-const ROOM_CHECK_TIME = 1000;
 class GameHandler extends LoggerClass {
+	static readonly ROOM_CHECK_TIME = 1000;
+
 	private openRooms: Room[] = [];
 	private inactiveRooms: Map<string, number> = new Map();
 	static instance: GameHandler = new GameHandler();
 
 	constructor() {
 		super('GameHandler');
-		
+
 		setInterval(() => {
 			this.openRooms.forEach((room) => {
 				if (room.isEmpty()) {
@@ -23,7 +24,7 @@ class GameHandler extends LoggerClass {
 					}
 				}
 			});
-		}, ROOM_CHECK_TIME);
+		}, GameHandler.ROOM_CHECK_TIME);
 	}
 
 	addRoom(room: Room) {

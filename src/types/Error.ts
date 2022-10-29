@@ -1,4 +1,6 @@
-import { PlacingError } from './PlacingError';
-import { ShortError } from './ShortError';
+import PlacingError from './PlacingError';
+import ShortError from './ShortError';
 
-export type Error = ShortError | PlacingError;
+type Error = ShortError | PlacingError;
+
+export default Error;

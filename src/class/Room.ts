@@ -1,21 +1,20 @@
 import Websocket from 'ws';
 import { v4 } from 'uuid';
+import GameState from '../types/GameState';
 import Scrabble from './Scrabble';
 import WSMessage from './WSMessage';
 import LoggerClass from './LoggerClass';
-import { Gamestate } from '../types/Gamestate';
-
-export default class Room extends LoggerClass {
+class Room extends LoggerClass {
 	private uuid: string;
 	private host: string;
 	private players: Map<Websocket, string>;
-	private gamestate: Gamestate;
+	private gameState: GameState;
 	private scrabbleGame: Scrabble | null;
 
 	constructor(uuid: string = v4()) {
 		super(`Room.${uuid}`);
 		this.uuid = uuid;
-		this.gamestate = 'waiting';
+		this.gameState = 'waiting';
 		this.players = new Map();
 		this.scrabbleGame = null;
 	}
@@ -44,7 +43,7 @@ export default class Room extends LoggerClass {
 		this.players.delete(ws);
 
 		//terminate game for now if one player left
-		if (this.gamestate === 'playing') {
+		if (this.gameState === 'playing') {
 			this.players.forEach((value, key) => {
 				this.log(`${value} forced to leave room`);
 				key.close();
@@ -75,9 +74,9 @@ export default class Room extends LoggerClass {
 	}
 
 	startGame(): Room {
-		if (this.gamestate === 'playing') return this;
+		if (this.gameState === 'playing') return this;
 
-		this.gamestate = 'playing';
+		this.gameState = 'playing';
 		this.scrabbleGame = new Scrabble(this, [...this.players.values()]);
 		this.broadcastMessage(new WSMessage('game:started', {}));
 		this.getGame().skip();
@@ -119,6 +118,8 @@ export default class Room extends LoggerClass {
 	}
 
 	isStarted(): boolean {
-		return this.gamestate === 'playing';
+		return this.gameState === 'playing';
 	}
 }
+
+export default Room;

@@ -1,5 +1,7 @@
-export type ShortError =
+type ShortError =
 	| 'Client Error'
 	| 'Server Error'
-	| 'Unautherized'
+	| 'Unauthorized'
 	| 'Invalid Code';
+
+export default ShortError;

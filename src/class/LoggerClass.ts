@@ -6,8 +6,8 @@ class LoggerClass {
 	}
 
 	log(msg: string, timestamp: boolean = false) {
-        console.log(`${Date.now()}| ${this.name} : ${msg}`)
-    }
+		console.log(`${Date.now()}| ${this.name} : ${msg}`);
+	}
 }
 
 export default LoggerClass;

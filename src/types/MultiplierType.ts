@@ -1,1 +1,3 @@
-export type MultiplierType = 'WORD' | 'LETTER';
+type MultiplierType = 'WORD' | 'LETTER';
+
+export default MultiplierType;

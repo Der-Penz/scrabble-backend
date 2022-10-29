@@ -1,5 +1,7 @@
 import Char from '../types/Char';
-import LetterTile, { getDefaultTile } from './LetterTile';
+import { getLetterTile } from './Helpers';
+import JokerLetterTile from './JokerLetterTile';
+import LetterTile from './LetterTile';
 
 const DEFAULT_BAG_FILL_MAP =
 	'EEEEEEEEEEEEEEENNNNNNNNNSSSSSSSIIIIIIRRRRRRTTTTTTUUUUUUAAAAADDDDHHHHGGGLLLOOOMMMMBBWZCCFFKKPÄJÜVÖXQY00';
@@ -9,7 +11,7 @@ class Bag {
 
 	constructor(fillMap: string = DEFAULT_BAG_FILL_MAP) {
 		fillMap.split('').forEach((char) => {
-			this.tiles.push(getDefaultTile(char as Char));
+			this.tiles.push(getLetterTile(char as Char));
 		});
 		this.shuffle();
 	}
@@ -32,7 +34,7 @@ class Bag {
 
 	swap(toSwap: LetterTile[]): LetterTile[] {
 		const newOnes = this.drawMany(toSwap.length);
-		
+
 		this.tiles.push(...toSwap);
 		this.shuffle();
 

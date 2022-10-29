@@ -1,4 +1,4 @@
-export class JsonResponse {
+class JsonResponse {
 	protected content: object;
 
 	constructor(content: object) {
@@ -13,3 +13,5 @@ export class JsonResponse {
 		return JSON.stringify(this.json());
 	}
 }
+
+export default JsonResponse;

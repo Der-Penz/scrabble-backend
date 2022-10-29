@@ -1,4 +1,4 @@
-export type PlacingError =
+type PlacingError =
 	| 'IllegalPlacement'
 	| 'InvalidWord'
 	| 'NotConnected'
@@ -7,3 +7,5 @@ export type PlacingError =
 	| 'BoardPlaceTaken'
 	| 'TileNotOnHand'
 	| 'NotCentered';
+
+export default PlacingError;
