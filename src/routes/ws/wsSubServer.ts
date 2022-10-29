@@ -7,6 +7,10 @@ import JokerLetterTile from '../../class/JokerLetterTile';
 import Char from '../../types/Char';
 import PositionedLetterTile from '../../class/PositionedLetterTile';
 import { getLetterTile } from '../../class/Helpers';
+import { Objective } from '../../types/Objective';
+import PointObjective from '../../class/PointObjective';
+import TimeObjective from '../../class/TimeObjective';
+import BaseObjective from '../../class/BaseObjective';
 
 const { app: wsServer } = wsExpress(express());
 
@@ -31,12 +35,36 @@ wsServer.ws('/:roomID', function (ws, req) {
 
 		console.log(`Incoming Action: ${message.getAction()}`);
 
+		if (roomToJoin.hasEnded()) {
+			return;
+		}
+
 		if (!roomToJoin.isStarted()) {
 			if (roomToJoin.getHost() !== name) {
 				return;
 			}
 			if (message.getAction() === 'game:start') {
-				roomToJoin.startGame();
+				const { objectiveType, points, minutes } = message.getContent();
+
+				let objective;
+				switch (objectiveType as Objective) {
+					case 'POINT': {
+						objective = new PointObjective(points);
+						break;
+					}
+					case 'TIME': {
+						objective = new TimeObjective(
+							TimeObjective.MINUTES_TO_MILLIS(minutes)
+						);
+						break;
+					}
+					default: {
+						objective = new BaseObjective();
+						break;
+					}
+				}
+
+				roomToJoin.startGame(objective);
 			}
 			return;
 		}

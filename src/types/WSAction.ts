@@ -1,6 +1,7 @@
 type WSAction =
 	| 'game:start'
 	| 'game:started'
+	| 'game:end'
 	| 'player:joined'
 	| 'player:left'
 	| 'message'

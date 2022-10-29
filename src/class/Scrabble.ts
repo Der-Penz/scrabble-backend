@@ -9,19 +9,27 @@ import PositionedLetterTile from './PositionedLetterTile';
 import Dictionary from './Dictionary';
 import Room from './Room';
 import WSMessage from './WSMessage';
+import BaseObjective from './BaseObjective';
 
 class Scrabble {
 	private board: Board;
 	private benches: Map<string, Bench> = new Map();
 	private currentPlayerIndex: number;
 	private bag: Bag;
+	private objective: BaseObjective;
 	private room: Room;
 
-	constructor(room: Room, players: string[], fillMap?: string) {
+	constructor(
+		room: Room,
+		players: string[],
+		objective?: BaseObjective,
+		fillMap?: string
+	) {
 		this.board = new Board();
 		this.bag = new Bag(fillMap);
 		this.room = room;
 		this.currentPlayerIndex = this.benches.size - 1;
+		this.objective = objective || new BaseObjective();
 
 		players.forEach((player) =>
 			this.benches.set(
@@ -29,6 +37,18 @@ class Scrabble {
 				new Bench(player, this.bag.drawMany(Bench.BASE_MAX_TILES))
 			)
 		);
+	}
+
+	getBag() {
+		return this.bag;
+	}
+
+	getBenches() {
+		return this.benches;
+	}
+
+	getBoard() {
+		return this.board;
 	}
 
 	currentPlayerName(): string {
@@ -39,9 +59,30 @@ class Scrabble {
 		return this.benches.get(this.currentPlayerName());
 	}
 
+	endGame() {
+		console.log('Game End');
+		this.broadcastGameState();
+
+		const { players, winner } = this.objective.calculateWinner(
+			this.benches
+		);
+
+		this.room.broadcastMessage(
+			new WSMessage('game:end', {
+				players: players,
+				winner: winner,
+			})
+		);
+	}
+
 	private nextPlayer() {
 		this.currentPlayerIndex =
 			(this.currentPlayerIndex + 1) % this.benches.size;
+
+		if (this.objective.checkForGameEnd(this)) {
+			this.endGame();
+			return;
+		}
 
 		const bench = this.currentBench();
 		const playerName = this.currentPlayerName();

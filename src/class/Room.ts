@@ -4,6 +4,9 @@ import GameState from '../types/GameState';
 import Scrabble from './Scrabble';
 import WSMessage from './WSMessage';
 import LoggerClass from './LoggerClass';
+import PointObjective from './PointObjective';
+import BaseObjective from './BaseObjective';
+import { Objective } from '../types/Objective';
 class Room extends LoggerClass {
 	private uuid: string;
 	private host: string;
@@ -73,11 +76,15 @@ class Room extends LoggerClass {
 		return this;
 	}
 
-	startGame(): Room {
+	startGame(objective: BaseObjective): Room {
 		if (this.gameState === 'playing') return this;
 
 		this.gameState = 'playing';
-		this.scrabbleGame = new Scrabble(this, [...this.players.values()]);
+		this.scrabbleGame = new Scrabble(
+			this,
+			[...this.players.values()],
+			objective
+		);
 		this.broadcastMessage(new WSMessage('game:started', {}));
 		this.getGame().skip();
 
@@ -117,8 +124,12 @@ class Room extends LoggerClass {
 		return ws;
 	}
 
-	isStarted(): boolean {
+	isStarted() {
 		return this.gameState === 'playing';
+	}
+
+	hasEnded() {
+		return this.gameState === 'ended';
 	}
 }
 
