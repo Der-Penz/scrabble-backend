@@ -1,27 +1,30 @@
 import express from 'express';
 import wsExpress from 'express-ws';
-import GameHandler from '../../GameHandler';
-import WSMessage from '../../class/WSMessage';
-import LetterTile from '../../class/LetterTile';
-import JokerLetterTile from '../../class/JokerLetterTile';
-import Char from '../../types/Char';
-import PositionedLetterTile from '../../class/PositionedLetterTile';
-import { getLetterTile } from '../../class/Helpers';
-import { Objective } from '../../types/Objective';
-import PointObjective from '../../class/PointObjective';
-import TimeObjective from '../../class/TimeObjective';
 import BaseObjective from '../../class/BaseObjective';
+import { getLetterTile } from '../../class/Helpers';
+import PointObjective from '../../class/PointObjective';
+import PositionedLetterTile from '../../class/PositionedLetterTile';
+import SeparatedTimeObjective from '../../class/SeparatedTimeObjective';
+import TimeObjective from '../../class/TimeObjective';
+import WSMessage from '../../class/WSMessage';
+import GameHandler from '../../GameHandler';
+import Char from '../../types/Char';
+import { Objective } from '../../types/Objective';
 
 const { app: wsServer } = wsExpress(express());
 
 wsServer.ws('/:roomID', function (ws, req) {
 	const roomID = req.params.roomID;
-	const name = (req.query.name as string) || randomName();
+	let name = (req.query.name as string) || randomName();
 	const roomToJoin = GameHandler.instance.getRoom(roomID);
 
 	if (!roomToJoin) {
 		ws.close();
 		return;
+	}
+
+	while (roomToJoin.hasName(name)) {
+		name = randomName();
 	}
 
 	roomToJoin.joinRoom(ws, name);
@@ -54,6 +57,12 @@ wsServer.ws('/:roomID', function (ws, req) {
 					}
 					case 'TIME': {
 						objective = new TimeObjective(
+							TimeObjective.MINUTES_TO_MILLIS(minutes)
+						);
+						break;
+					}
+					case 'SEPARATED_TIME': {
+						objective = new SeparatedTimeObjective(
 							TimeObjective.MINUTES_TO_MILLIS(minutes)
 						);
 						break;
@@ -138,8 +147,39 @@ wsServer.ws('/:roomID', function (ws, req) {
 });
 
 function randomName(): string {
-	const names = ['devin', 'mike', 'sven'];
-	const lastNames = ['from Germany', 'miller', 'Kopf', 'luther', 'singer'];
+	const names = [
+		'funny',
+		'old',
+		'happy',
+		'bloody',
+		'brave',
+		'clever',
+		'crazy',
+		'cute',
+		'hungry',
+		'lucky',
+		'powerful',
+		'sleepy',
+		'tired',
+	];
+	const lastNames = [
+		'frog',
+		'crow',
+		'falcon',
+		'hawk',
+		'owl',
+		'parrot',
+		'penguin',
+		'turkey',
+		'shark',
+		'crab',
+		'bee',
+		'bear',
+		'goat',
+		'seal',
+		'lizard',
+		'chameleon',
+	];
 
 	return (
 		names[Math.floor(Math.random() * names.length)] +

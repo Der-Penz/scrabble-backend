@@ -113,6 +113,10 @@ class Room extends LoggerClass {
 		return this.players.size === 0;
 	}
 
+	hasName(name: string){
+		return this.getWs(name) !== null;
+	}
+
 	getWs(name: string): Websocket | null {
 		let ws: Websocket | null;
 		this.players.forEach((value, key) => {
