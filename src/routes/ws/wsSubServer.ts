@@ -11,17 +11,22 @@ import { Objective } from '../../types/Objective';
 import PointObjective from '../../class/PointObjective';
 import TimeObjective from '../../class/TimeObjective';
 import BaseObjective from '../../class/BaseObjective';
+import SeparatedTimeObjective from '../../class/SeparatedTimeObjective';
 
 const { app: wsServer } = wsExpress(express());
 
 wsServer.ws('/:roomID', function (ws, req) {
 	const roomID = req.params.roomID;
-	const name = (req.query.name as string) || randomName();
+	let name = (req.query.name as string) || randomName();
 	const roomToJoin = GameHandler.instance.getRoom(roomID);
 
 	if (!roomToJoin) {
 		ws.close();
 		return;
+	}
+
+	while (roomToJoin.hasName(name)) {
+		name = randomName();
 	}
 
 	roomToJoin.joinRoom(ws, name);
@@ -54,6 +59,12 @@ wsServer.ws('/:roomID', function (ws, req) {
 					}
 					case 'TIME': {
 						objective = new TimeObjective(
+							TimeObjective.MINUTES_TO_MILLIS(minutes)
+						);
+						break;
+					}
+					case 'SEPARATED_TIME': {
+						objective = new SeparatedTimeObjective(
 							TimeObjective.MINUTES_TO_MILLIS(minutes)
 						);
 						break;
@@ -138,8 +149,39 @@ wsServer.ws('/:roomID', function (ws, req) {
 });
 
 function randomName(): string {
-	const names = ['devin', 'mike', 'sven'];
-	const lastNames = ['from Germany', 'miller', 'Kopf', 'luther', 'singer'];
+	const names = [
+		'funny',
+		'old',
+		'happy',
+		'bloody',
+		'brave',
+		'clever',
+		'crazy',
+		'cute',
+		'hungry',
+		'lucky',
+		'powerful',
+		'sleepy',
+		'tired',
+	];
+	const lastNames = [
+		'frog',
+		'crow',
+		'falcon',
+		'hawk',
+		'owl',
+		'parrot',
+		'penguin',
+		'turkey',
+		'shark',
+		'crab',
+		'bee',
+		'bear',
+		'goat',
+		'seal',
+		'lizard',
+		'chameleon',
+	];
 
 	return (
 		names[Math.floor(Math.random() * names.length)] +
