@@ -76,13 +76,13 @@ class Scrabble {
 	}
 
 	private nextPlayer() {
-		this.currentPlayerIndex =
-			(this.currentPlayerIndex + 1) % this.benches.size;
-
 		if (this.objective.checkForGameEnd(this)) {
 			this.endGame();
 			return;
 		}
+
+		this.currentPlayerIndex =
+			(this.currentPlayerIndex + 1) % this.benches.size;
 
 		const bench = this.currentBench();
 		const playerName = this.currentPlayerName();
