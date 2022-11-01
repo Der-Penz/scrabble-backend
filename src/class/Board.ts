@@ -2,7 +2,8 @@ import BoardPosition from './BoardPosition';
 import PositionedLetterTile from './PositionedLetterTile';
 import BoardTile from './BoardTile';
 import MultiplierBoardTile from './MultiplierBoardTile';
-import { getBoardTileForNumber } from './Helpers';
+import { getBoardTileForNumber, getLetterTile } from './Helpers';
+import LetterTile from './LetterTile';
 
 class Board {
 	static readonly DEFAULT_MAP = [

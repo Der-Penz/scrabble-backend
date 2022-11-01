@@ -60,7 +60,7 @@ class Scrabble {
 	}
 
 	endGame() {
-		console.log('Game End');
+		this.room.log('Game ended');
 		this.broadcastGameState();
 
 		const { players, winner } = this.objective.calculateWinner(
@@ -88,6 +88,9 @@ class Scrabble {
 		const playerName = this.currentPlayerName();
 
 		while (!bench.isFull()) {
+			if (this.bag.getCount() === 0) {
+				break;
+			}
 			bench.addTile(this.bag.drawOne());
 		}
 
@@ -204,9 +207,73 @@ class Scrabble {
 		return positionedTiles;
 	}
 
+	calculateAdjacentWord(
+		position: PositionedLetterTile,
+		direction: WordDirection
+	) {
+		const startPos =
+			this.getLowerTile(
+				direction === 'Horizontal'
+					? new BoardPosition(position.x - 1, position.y)
+					: new BoardPosition(position.x, position.y - 1),
+				direction
+			) || position;
+
+		let word = '';
+		let currentPosition = startPos;
+		let endPos = startPos;
+
+		while (currentPosition !== null) {
+			const tile = this.board.getTile(
+				currentPosition.x,
+				currentPosition.y
+			);
+
+			if (tile === null || !tile.isTaken()) {
+				if (position.equals(currentPosition)) {
+					word += position.tile.getChar();
+				} else {
+					//end of word
+					break;
+				}
+			} else {
+				word += tile.getTile().getChar();
+			}
+
+			endPos = currentPosition;
+
+			//go one higher
+			if (direction === 'Horizontal') {
+				currentPosition = new BoardPosition(
+					currentPosition.x + 1,
+					currentPosition.y
+				);
+			} else {
+				currentPosition = new BoardPosition(
+					currentPosition.x,
+					currentPosition.y + 1
+				);
+			}
+		}
+
+		if (word.length <= 1) {
+			return null;
+		}
+
+		if (!Dictionary.instance.isWordValid(word)) {
+			return new JsonErrorResponse(
+				'InvalidWord',
+				'Word is not a official allowed Scrabble word',
+				{ word: word }
+			);
+		}
+
+		return { startPos, endPos };
+	}
+
 	trade(which: Char[] = []) {
-		const MAX_TRADES = 7;
-		const currentBench = this.benches.get(this.currentPlayerName());
+		const MAX_TRADES = Math.min(this.bag.getCount(), 7);
+		const currentBench = this.currentBench();
 
 		const toTrade = which.reduce((prev, char, i) => {
 			if (i >= MAX_TRADES) return prev;
@@ -250,6 +317,10 @@ class Scrabble {
 			) || positionedTiles[0];
 
 		let word = '';
+		let positionsToCalculatePointsLater: Array<{
+			startPos: BoardPosition;
+			endPos: BoardPosition;
+		}> = [];
 		let nextToAlreadyPlacedTile = false;
 		const wordTiles: PositionedLetterTile[] = [];
 
@@ -289,7 +360,7 @@ class Scrabble {
 				) {
 					return new JsonErrorResponse(
 						'BoardPlaceTaken',
-						'On the selected indices is already a tile',
+						'On the selected indices are already a tiles',
 						{
 							x: tileToBePlaced.x,
 							y: tileToBePlaced.y,
@@ -300,6 +371,19 @@ class Scrabble {
 								.getChar(),
 						}
 					);
+				}
+
+				const adjacentError = this.calculateAdjacentWord(
+					tileToBePlaced,
+					direction === 'Horizontal' ? 'Vertical' : 'Horizontal'
+				);
+
+				if (adjacentError instanceof JsonErrorResponse) {
+					return adjacentError;
+				}
+
+				if (adjacentError !== null) {
+					positionsToCalculatePointsLater.push(adjacentError);
 				}
 
 				word += tileToBePlaced.tile.getChar();
@@ -369,7 +453,11 @@ class Scrabble {
 			);
 		}
 
-		if (!nextToAlreadyPlacedTile && !this.board.isEmpty()) {
+		if (
+			!nextToAlreadyPlacedTile &&
+			!this.board.isEmpty() &&
+			positionsToCalculatePointsLater.length === 0
+		) {
 			return new JsonErrorResponse(
 				'NotConnected',
 				'Word is not connected to existing words',
@@ -401,6 +489,14 @@ class Scrabble {
 		//add the points to the player
 		const points = this.board.calculatePoints(startPos, endPos);
 		this.currentBench().addPoints(points);
+
+		positionsToCalculatePointsLater.forEach((word) => {
+			const points = this.board.calculatePoints(
+				word.startPos,
+				word.endPos
+			);
+			this.currentBench().addPoints(points);
+		});
 
 		this.nextPlayer();
 	}

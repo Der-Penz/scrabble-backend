@@ -27,6 +27,9 @@ class Bag {
 	drawMany(amount: number = 1) {
 		const tiles: LetterTile[] = [];
 		for (let i = 0; i < amount; i++) {
+			if(this.getCount() === 0){
+				break;
+			}
 			tiles.push(this.drawOne());
 		}
 		return tiles;

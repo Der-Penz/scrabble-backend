@@ -31,6 +31,15 @@ class Room extends LoggerClass {
 
 		this.broadcastMessage(new WSMessage('player:joined', { name }));
 		this.players.set(ws, name);
+		this.players.forEach((playerName, _) => {
+			if (playerName === name) {
+				return;
+			}
+			this.sendMessage(
+				new WSMessage('player:joined', { playerName }),
+				name
+			);
+		});
 	}
 
 	leaveRoom(ws: Websocket): boolean {
@@ -71,7 +80,7 @@ class Room extends LoggerClass {
 	sendMessage(msg: WSMessage, name: string): Room {
 		const stringMessage = JSON.stringify(msg.json());
 
-		this.getWs(name).send(stringMessage);
+		this.getWs(name)?.send(stringMessage);
 
 		return this;
 	}
@@ -113,12 +122,12 @@ class Room extends LoggerClass {
 		return this.players.size === 0;
 	}
 
-	hasName(name: string){
+	hasName(name: string) {
 		return this.getWs(name) !== null;
 	}
 
 	getWs(name: string): Websocket | null {
-		let ws: Websocket | null;
+		let ws: Websocket | null = null;
 		this.players.forEach((value, key) => {
 			if (value === name) {
 				ws = key;

@@ -25,15 +25,17 @@ class SeparatedTimeObjective extends BaseObjective {
 		);
 
 		this.pastMillisSinceLastSwap = Date.now();
-		return Math.random() > 0.5;
 		return super.checkForGameEnd(currentGame);
 	}
 
 	calculateWinner(benches: Map<string, Bench>) {
+		const { players: oldPlayers } =
+			super.calculateWinner(benches);
+
 		const players = {};
 		const winner = { name: '', points: 0 };
 		benches.forEach((bench, name) => {
-			let points = bench.getPoints();
+			let points = oldPlayers[name];
 
 			if (this.playerPastMillis.get(name) > this.millisToPlay) {
 				const difference =

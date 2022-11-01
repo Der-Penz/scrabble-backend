@@ -47,7 +47,14 @@ wsServer.ws('/:roomID', function (ws, req) {
 				return;
 			}
 			if (message.getAction() === 'game:start') {
-				const { objectiveType, points, minutes } = message.getContent();
+				let objectiveType: Objective = 'BASE';
+				let points: number = 50;
+				let minutes: number = 20;
+				if (message.hasContent()) {
+					objectiveType  = message.getContent().objectiveType || 'BASE';
+					points  = message.getContent().points || 50;
+					minutes  = message.getContent().minutes || 20;
+				}
 
 				let objective;
 				switch (objectiveType as Objective) {

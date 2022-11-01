@@ -82,6 +82,10 @@ class Bench {
 		return this.tilesOnHand.length >= this.maxTiles;
 	}
 
+	isEmpty() {
+		return this.tilesOnHand.length === 0;
+	}
+
 	getBench() {
 		return this.tilesOnHand;
 	}

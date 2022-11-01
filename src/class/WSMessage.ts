@@ -29,6 +29,10 @@ class WSMessage {
 		return this.content;
 	}
 
+	hasContent() {
+		return this.content !== null && this.content !== undefined;
+	}
+
 	json() {
 		return {
 			action: this.action,

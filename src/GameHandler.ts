@@ -13,6 +13,8 @@ class GameHandler extends LoggerClass {
 
 		setInterval(() => {
 			this.openRooms.forEach((room) => {
+				if (room.getUUID() === 'debugging') return;
+
 				if (room.isEmpty()) {
 					this.inactiveRooms.set(
 						room.getUUID(),
@@ -29,7 +31,7 @@ class GameHandler extends LoggerClass {
 
 	addRoom(room: Room) {
 		this.openRooms.push(room);
-		this.log(`addding room ${room.getUUID()}`);
+		this.log(`adding room ${room.getUUID()}`);
 	}
 
 	deleteRoom(roomID: string, delay: number = 0) {

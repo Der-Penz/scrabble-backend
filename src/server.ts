@@ -1,6 +1,7 @@
 import { log } from 'console';
 import express from 'express';
 import wsExpress from 'express-ws';
+import cors from 'cors'
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -13,6 +14,7 @@ import Room from './class/Room';
 export const { app } = wsExpress(express());
 
 app.use(express.json());
+app.use(cors());
 app.use('/*', logRouter);
 
 app.use('/api/v1', apiRouter);
