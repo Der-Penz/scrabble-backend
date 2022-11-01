@@ -122,7 +122,7 @@ class Room extends LoggerClass {
 		return this.players.size === 0;
 	}
 
-	hasName(name: string) {
+	hasName(name: string){
 		return this.getWs(name) !== null;
 	}
 
