@@ -59,7 +59,7 @@ class Scrabble {
 		return this.benches.get(this.currentPlayerName());
 	}
 
-	endGame() {
+	private endGame() {
 		this.room.log('Game ended');
 		this.broadcastGameState();
 
@@ -73,6 +73,10 @@ class Scrabble {
 				winner: winner,
 			})
 		);
+	}
+
+	forfeit(){
+		this.endGame();
 	}
 
 	private nextPlayer() {

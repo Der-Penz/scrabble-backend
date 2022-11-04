@@ -23,6 +23,10 @@ class Room extends LoggerClass {
 	}
 
 	joinRoom(ws: Websocket, name: string) {
+		if (this.gameState !== 'waiting') {
+			return false;
+		}
+
 		this.log(`${name} joined room`);
 
 		if (!this.host) {
@@ -40,6 +44,8 @@ class Room extends LoggerClass {
 				name
 			);
 		});
+
+		return true;
 	}
 
 	leaveRoom(ws: Websocket): boolean {
@@ -122,7 +128,7 @@ class Room extends LoggerClass {
 		return this.players.size === 0;
 	}
 
-	hasName(name: string){
+	hasName(name: string) {
 		return this.getWs(name) !== null;
 	}
 

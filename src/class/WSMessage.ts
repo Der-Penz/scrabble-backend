@@ -13,7 +13,7 @@ class WSMessage {
 		try {
 			const json = JSON.parse(msg);
 
-			return new WSMessage(json.action, json.content);
+			return new WSMessage(json.action, json.message);
 		} catch (err) {
 			console.error('error during ws message parsing');
 			console.error(err);

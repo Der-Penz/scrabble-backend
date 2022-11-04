@@ -33,7 +33,7 @@ class SeparatedTimeObjective extends BaseObjective {
 			super.calculateWinner(benches);
 
 		const players = {};
-		const winner = { name: '', points: 0 };
+		let winner : { name: string, points: number } = null;
 		benches.forEach((bench, name) => {
 			let points = oldPlayers[name];
 
@@ -46,6 +46,11 @@ class SeparatedTimeObjective extends BaseObjective {
 			}
 
 			players[name] = points;
+			if (winner === null) {
+				winner = { points: points, name: name };
+				return;
+			}
+
 			if (points > winner.points) {
 				winner.points = points;
 				winner.name = bench.getOwner();

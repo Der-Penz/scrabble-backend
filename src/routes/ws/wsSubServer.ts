@@ -27,7 +27,11 @@ wsServer.ws('/:roomID', function (ws, req) {
 		name = randomName();
 	}
 
-	roomToJoin.joinRoom(ws, name);
+	const joined = roomToJoin.joinRoom(ws, name);
+
+	if(!joined){
+		ws.close();
+	}
 
 	ws.on('message', function (msg) {
 		const message = WSMessage.ToWSMessage(msg.toString());
@@ -93,6 +97,10 @@ wsServer.ws('/:roomID', function (ws, req) {
 		}
 
 		//actions
+		if(message.getAction() === 'game:move:forfeit'){
+			roomToJoin.getGame().forfeit();
+		}
+
 		if (message.getAction() === 'game:move:skip') {
 			roomToJoin.getGame().skip();
 		}
