@@ -1,10 +1,10 @@
-#Scrabble Backend
+# Scrabble Backend
 
 This project is a Backend for the popular word game [Scrabble](https://de.wikipedia.org/wiki/Scrabble#Buchstabensteine). It provides a api to create rooms for players to gather and all the functionality to play the game.
 
 ---
 
-##Host your own
+## Host your own
 
 1. install node, npm
 2. clone this repo
@@ -13,7 +13,7 @@ This project is a Backend for the popular word game [Scrabble](https://de.wikipe
 
 ---
 
-##API
+## API
 
 - Parameters marked with **?** are optional
 - Properties marked with **?** can be undefined
@@ -31,7 +31,7 @@ Responses will have a `content` property where everything response related is lo
     - `error?` : short error message
     - `errorMessage?` : longer more particular error message 
 
-#####Endpoints
+##### Endpoints
 
 <details>
 <summary><code>POST</code> <b>Create room:</b> <code>/room/create</code></summary>
@@ -110,7 +110,7 @@ Responses will have a `content` property where everything response related is lo
 
 <br>
 
-####WS Endpoint
+#### WS Endpoint
 
 To provided a ongoing connection of server and client to constantly share the game state a WS connection will be established. To join a Scrabble room you connect to the WS Endpoint `/ws/[id]` with the id being the room you want to join. Additionally a name parameter can be added to get a custom name otherwise a random name will be chosen for you.If the custom name is already used you will also get a random one. If no room with the given id is open no connection will be closed.
 
@@ -120,7 +120,7 @@ Example Endpoint:
 
     ws://localhost:8808/ws/test   or   ws://localhost:8808/ws/test?name=Steve
       
-#####Handling communication
+##### Handling communication
 
 To handle the communication each message has a `action` to define what to do with the payload.
 
@@ -136,7 +136,7 @@ To handle the communication each message has a `action` to define what to do wit
     }
     ```
 
-#####Actions
+##### Actions
 
 | Action            | Transmitter |Description                                                                                               |
 |-------------------|-------------|-----------------------------------------------------------------------------------------------------------|
@@ -152,7 +152,7 @@ To handle the communication each message has a `action` to define what to do wit
 | `game:move:place` | Client      | send to place letters on the board
 | `game:move:forfeit` | Client      | send to forfeit the game
 
-#####Messages
+##### Messages
 
 * **Server**
 
