@@ -40,6 +40,10 @@ class GameHandler extends LoggerClass {
 				(room) => room.getUUID() === roomID
 			);
 
+			if (this.openRooms.at(roomIndex).getUUID() === 'debugging') {
+				return;
+			}
+
 			if (roomIndex == undefined) {
 				return;
 			}

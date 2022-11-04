@@ -1,5 +1,5 @@
 type ShortError =
-	| 'Client Error'
+	| 'ClientError'
 	| 'Server Error'
 	| 'Unauthorized'
 	| 'Invalid Code';

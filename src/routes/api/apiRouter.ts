@@ -7,7 +7,19 @@ import JsonErrorResponse from '../../class/JsonErrorResponse';
 const apiRouter = express.Router();
 
 apiRouter.post('/room/create', (req, res) => {
-	const newRoom = new Room();
+	const customID = req.query.id as string;
+
+	let newRoom;
+	if (GameHandler.instance.getRoom(customID)) {
+		return res
+			.status(400)
+			.send(
+				new JsonErrorResponse('ClientError', 'id already in use', {
+					id: customID,
+				}).json()
+			);
+	}
+	newRoom = new Room(customID);
 
 	GameHandler.instance.addRoom(newRoom);
 
@@ -25,7 +37,7 @@ apiRouter.get('/room/exists', (req, res) => {
 
 	if (!toCheck) {
 		res.status(400).send(
-			new JsonErrorResponse('Client Error', 'no id provided').json()
+			new JsonErrorResponse('ClientError', 'no id provided', {}).json()
 		);
 		return;
 	}
