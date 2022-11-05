@@ -177,10 +177,10 @@ To handle the communication each message has a `action` to define what to do wit
     <br>
 
     <details>
-    <summary><code>game:move:trade</code></summary>
+    <summary><code>player:left</code></summary>
         Send from the server after a client leaves a room. Contains information about the players name.
 
-    * **Action:** `game:move:trade`
+    * **Action:** `player:left`
     * **Message:** 
         + `name` : string
     * **Example:**
