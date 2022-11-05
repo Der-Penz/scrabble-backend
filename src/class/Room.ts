@@ -37,10 +37,14 @@ class Room extends LoggerClass {
 		this.players.set(ws, name);
 		this.players.forEach((playerName, _) => {
 			if (playerName === name) {
+				this.sendMessage(
+					new WSMessage('player:joined', { playerName, host: true }),
+					name
+				);
 				return;
 			}
 			this.sendMessage(
-				new WSMessage('player:joined', { playerName }),
+				new WSMessage('player:joined', { playerName, host: false }),
 				name
 			);
 		});

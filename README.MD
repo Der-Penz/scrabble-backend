@@ -132,7 +132,7 @@ To handle the communication each message has a `action` to define what to do wit
     ```json
     {
         "action": "player:joined",
-        "message": { "name": "Steve" }
+        "message": { "name": "Steve", "host": true }
     }
     ```
 
@@ -158,17 +158,19 @@ To handle the communication each message has a `action` to define what to do wit
 
     <details>
     <summary><code>player:joined</code></summary>
-        Send from the server after a client joins in a room or if you join in a room with players in it so you know who's in there. Contains information about the players name.
+        Send from the server after a client joins in a room or if you join in a room with players in it so you know who's in there. Contains information about the players name and if they are the host of the game.
 
     * **Action:** `player:joined`
     * **Message:** 
         + `name` : string
+        + `host` : boolean
     * **Example:**
         ```json
         {
           "action": "player:joined",
           "message": {
-            "name": "Steve"
+            "name": "Steve",
+            "host": true,
           }
         }
         ```
