@@ -15,7 +15,7 @@ apiRouter.post('/room/create', (req, res) => {
 			.status(400)
 			.send(
 				new JsonErrorResponse('ClientError', 'id already in use', {
-					id: customID,
+					roomID: customID,
 				}).json()
 			);
 	}

@@ -52,7 +52,7 @@ Responses will have a `content` property where everything response related is lo
             {
         	    "error": "ClientError",
         	    "errorMessage": "id already in use",
-        	    "content": { "id": "test" }
+        	    "content": { "roomID": "test" }
             }
             ```
 
