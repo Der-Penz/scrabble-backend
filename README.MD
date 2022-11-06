@@ -93,6 +93,17 @@ Responses will have a `content` property where everything response related is lo
               "content": {}
             }
             ```
+    -   Game running or ended
+        -   **Code:** `400`🔴
+        -   **Problem:** Game is already playing or game ended 
+        -   **Example:** sending over an id to a room which is already in play state.
+            ```json
+            {
+              "error": "GameRunning",
+              "errorMessage": "game is already running or has ended",
+              "content": {"gameState" : "playing"}
+            }
+            ```
 
     - Id provided
         -   **Code:** `200`🟢

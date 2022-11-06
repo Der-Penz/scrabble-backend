@@ -165,6 +165,10 @@ class Room extends LoggerClass {
 	hasEnded() {
 		return this.gameState === 'ended';
 	}
+
+	getGameState(){
+		return this.gameState;
+	}
 }
 
 export default Room;
