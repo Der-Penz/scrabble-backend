@@ -145,6 +145,7 @@ To handle the communication each message has a `action` to define what to do wit
 | `game:end`        | Server      | send when the game ends with all data about the winner                                                    |
 | `player:joined`   | Server      | send when a player joins the room or when you join a room with people in it so you know who's in the room |
 | `player:left`     | Server      | send when a player leaves a room                                                                          |
+| `player:self`     | Server      | send when a player joins a room to know who he is                                                                           |
 | `game:next`       | Server      | send to the current player when it is his turn                                                            |
 | `game:state`      | Server      | send after every turn with the new state of the game                                                      |
 | `game:move:trade` | Client      | send to trade in your turn                                                                                |
@@ -185,12 +186,36 @@ To handle the communication each message has a `action` to define what to do wit
     * **Action:** `player:left`
     * **Message:** 
         + `name` : string
+        + `host` : boolean
     * **Example:**
         ```json
         {
           "action": "player:left",
           "message": {
-            "name": "Steve"
+            "name": "Steve",
+            "host": true
+          }
+        }
+        ```
+    </details>
+
+    <br>
+
+    <details>
+    <summary><code>player:self</code></summary>
+        Send from the server after a client joins a room only to the joining client. Contains information about his name.
+
+    * **Action:** `player:self`
+    * **Message:** 
+        + `name` : string
+        + `host` : boolean
+    * **Example:**
+        ```json
+        {
+          "action": "player:self",
+          "message": {
+            "name": "Steve",
+            "host": true
           }
         }
         ```

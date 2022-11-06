@@ -20,6 +20,7 @@ class Room extends LoggerClass {
 		this.gameState = 'waiting';
 		this.players = new Map();
 		this.scrabbleGame = null;
+		this.host = undefined;
 	}
 
 	joinRoom(ws: Websocket, name: string) {
@@ -33,20 +34,28 @@ class Room extends LoggerClass {
 			this.host = name;
 		}
 
-		this.broadcastMessage(new WSMessage('player:joined', { name }));
+		this.broadcastMessage(
+			new WSMessage('player:joined', { name, host: this.host === name })
+		);
 		this.players.set(ws, name);
 		this.players.forEach((playerName, _) => {
 			if (playerName === name) {
 				this.sendMessage(
-					new WSMessage('player:joined', { playerName, host: true }),
+					new WSMessage('player:self', {
+						name,
+						host: this.host === name,
+					}),
 					name
 				);
-				return;
+			} else {
+				this.sendMessage(
+					new WSMessage('player:joined', {
+						name: playerName,
+						host: this.host === playerName,
+					}),
+					name
+				);
 			}
-			this.sendMessage(
-				new WSMessage('player:joined', { playerName, host: false }),
-				name
-			);
 		});
 
 		return true;
@@ -57,15 +66,17 @@ class Room extends LoggerClass {
 			return this.players.size === 0;
 		}
 
-		const name = this.players.get(ws);
-
+		const name = this.getPlayer(ws);
 		this.log(`${name} left room`);
 
-		this.broadcastMessage(new WSMessage('player:left', { name }));
 		this.players.delete(ws);
 
+		this.broadcastMessage(
+			new WSMessage('player:left', { name, host: this.host === name })
+		);
+
 		//terminate game for now if one player left
-		if (this.gameState === 'playing') {
+		if (this.gameState === 'playing' || this.host === name) {
 			this.players.forEach((value, key) => {
 				this.log(`${value} forced to leave room`);
 				key.close();

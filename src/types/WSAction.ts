@@ -4,6 +4,7 @@ type WSAction =
 	| 'game:end'
 	| 'player:joined'
 	| 'player:left'
+	| 'player:self'
 	| 'message'
 	| 'game:next'
 	| 'game:state'
