@@ -7,6 +7,8 @@ import LoggerClass from './LoggerClass';
 import PointObjective from './PointObjective';
 import BaseObjective from './BaseObjective';
 import { Objective } from '../types/Objective';
+import TimeObjective from './TimeObjective';
+import SeparatedTimeObjective from './SeparatedTimeObjective';
 class Room extends LoggerClass {
 	private uuid: string;
 	private host: string;
@@ -115,7 +117,27 @@ class Room extends LoggerClass {
 			[...this.players.values()],
 			objective
 		);
-		this.broadcastMessage(new WSMessage('game:started', {}));
+
+		let minutes = 0;
+		let points = 0;
+		if (objective instanceof TimeObjective) {
+			minutes = (objective as TimeObjective).getTime() / 60 / 1000;
+		}
+		if (objective instanceof SeparatedTimeObjective) {
+			minutes =
+				(objective as SeparatedTimeObjective).getTime() / 60 / 1000;
+		}
+		if (objective instanceof PointObjective) {
+			minutes = (objective as PointObjective).getPointsToWin();
+		}
+
+		this.broadcastMessage(
+			new WSMessage('game:started', {
+				objectiveType: objective.getType(),
+				minutes: minutes,
+				points: points,
+			})
+		);
 		this.getGame().skip();
 
 		return this;
@@ -166,7 +188,7 @@ class Room extends LoggerClass {
 		return this.gameState === 'ended';
 	}
 
-	getGameState(){
+	getGameState() {
 		return this.gameState;
 	}
 }

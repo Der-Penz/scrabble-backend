@@ -51,6 +51,10 @@ class Scrabble {
 		return this.board;
 	}
 
+	getObjective() {
+		return this.objective;
+	}
+
 	currentPlayerName(): string {
 		return [...this.benches.keys()][this.currentPlayerIndex];
 	}

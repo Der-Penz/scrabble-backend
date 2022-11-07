@@ -7,6 +7,7 @@ class TimeObjective extends BaseObjective {
 
 	constructor(millisToPlay: number) {
 		super();
+		this.type = 'TIME';
 		this.startTime = Date.now();
 		this.millisToPlay = millisToPlay;
 	}
@@ -27,7 +28,9 @@ class TimeObjective extends BaseObjective {
 		return super.checkForGameEnd(currentGame);
 	}
 
-	
+	getTime(){
+		return this.millisToPlay;
+	}
 }
 
 export default TimeObjective;

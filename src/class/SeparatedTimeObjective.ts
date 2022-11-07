@@ -10,6 +10,7 @@ class SeparatedTimeObjective extends BaseObjective {
 	constructor(millisToPlay: number) {
 		super();
 
+		this.type = 'SEPARATED_TIME';
 		this.millisToPlay = millisToPlay;
 		this.pastMillisSinceLastSwap = Date.now();
 		this.playerPastMillis = new Map();
@@ -58,6 +59,10 @@ class SeparatedTimeObjective extends BaseObjective {
 		});
 
 		return { players, winner };
+	}
+
+	getTime(){
+		return this.millisToPlay;
 	}
 }
 

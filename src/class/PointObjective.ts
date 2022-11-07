@@ -6,6 +6,8 @@ class PointObjective extends BaseObjective {
 
 	constructor(pointsToWin: number = 100) {
 		super();
+
+		this.type = 'POINT';
 		this.pointsToWin = pointsToWin;
 	}
 
@@ -18,6 +20,10 @@ class PointObjective extends BaseObjective {
 			return true;
 		}
 		return super.checkForGameEnd(currentGame);
+	}
+
+	getPointsToWin(){
+		return this.pointsToWin;
 	}
 }
 

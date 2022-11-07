@@ -1,8 +1,13 @@
+import { Objective } from '../types/Objective';
 import Bench from './Bench';
 import Scrabble from './Scrabble';
 
 class BaseObjective {
-	constructor() {}
+	protected type: Objective;
+
+	constructor() {
+		this.type = 'BASE';
+	}
 
 	checkForGameEnd(currentGame: Scrabble) {
 		if (currentGame.getBag().getCount() === 0) {
@@ -43,6 +48,10 @@ class BaseObjective {
 		});
 
 		return { players, winner };
+	}
+
+	getType(){
+		return this.type;
 	}
 }
 

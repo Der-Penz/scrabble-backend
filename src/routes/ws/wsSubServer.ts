@@ -29,7 +29,7 @@ wsServer.ws('/:roomID', function (ws, req) {
 
 	const joined = roomToJoin.joinRoom(ws, name);
 
-	if(!joined){
+	if (!joined) {
 		ws.close();
 	}
 
@@ -54,10 +54,16 @@ wsServer.ws('/:roomID', function (ws, req) {
 				let objectiveType: Objective = 'BASE';
 				let points: number = 50;
 				let minutes: number = 20;
-				if (message.hasContent()) {
-					objectiveType  = message.getContent().objectiveType || 'BASE';
-					points  = message.getContent().points || 50;
-					minutes  = message.getContent().minutes || 20;
+				try {
+					if (message.hasContent()) {
+						objectiveType =
+							message.getContent().objectiveType.toUpperCase() ||
+							'BASE';
+						points = message.getContent().points || 50;
+						minutes = message.getContent().minutes || 20;
+					}
+				} catch (err) {
+					console.error(err);
 				}
 
 				let objective;
@@ -97,7 +103,7 @@ wsServer.ws('/:roomID', function (ws, req) {
 		}
 
 		//actions
-		if(message.getAction() === 'game:move:forfeit'){
+		if (message.getAction() === 'game:move:forfeit') {
 			roomToJoin.getGame().forfeit();
 		}
 

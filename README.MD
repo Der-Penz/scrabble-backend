@@ -236,7 +236,7 @@ To handle the communication each message has a `action` to define what to do wit
 
     <details>
     <summary><code>game:started</code></summary>
-        Send from the server after the host started a game to notify the client 
+        Send from the server after the host started a game to notify the client with the given settings of the game.
 
     * **Action:** `game:started`
     * **Message:** **-**
@@ -244,7 +244,12 @@ To handle the communication each message has a `action` to define what to do wit
         ```json
         {
           "action": "game:started",
-          "message": {}
+          "message": 
+          {
+            "objectiveType": "TIME",
+            "minutes": 123,
+            "points": 0
+          }
         }
         ```
     </details>
