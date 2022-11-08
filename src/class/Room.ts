@@ -10,6 +10,9 @@ import { Objective } from '../types/Objective';
 import TimeObjective from './TimeObjective';
 import SeparatedTimeObjective from './SeparatedTimeObjective';
 class Room extends LoggerClass {
+
+	static MAX_PLAYERS = 4;
+
 	private uuid: string;
 	private host: string;
 	private players: Map<Websocket, string>;
@@ -26,7 +29,7 @@ class Room extends LoggerClass {
 	}
 
 	joinRoom(ws: Websocket, name: string) {
-		if (this.gameState !== 'waiting') {
+		if (this.gameState !== 'waiting' || this.isFull()) {
 			return false;
 		}
 
@@ -161,8 +164,16 @@ class Room extends LoggerClass {
 		return this.players.get(ws);
 	}
 
+	getPlayerCount() : number{
+		return this.players.size;
+	}
+
 	isEmpty(): boolean {
 		return this.players.size === 0;
+	}
+
+	isFull(): boolean{
+		return this.players.size === Room.MAX_PLAYERS;
 	}
 
 	hasName(name: string) {
