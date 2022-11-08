@@ -1,16 +1,15 @@
-import Websocket from 'ws';
 import { v4 } from 'uuid';
+import Websocket from 'ws';
 import GameState from '../types/GameState';
-import Scrabble from './Scrabble';
-import WSMessage from './WSMessage';
+import { RoomVisibility } from '../types/RoomVisibility';
+import BaseObjective from './BaseObjective';
 import LoggerClass from './LoggerClass';
 import PointObjective from './PointObjective';
-import BaseObjective from './BaseObjective';
-import { Objective } from '../types/Objective';
-import TimeObjective from './TimeObjective';
+import Scrabble from './Scrabble';
 import SeparatedTimeObjective from './SeparatedTimeObjective';
+import TimeObjective from './TimeObjective';
+import WSMessage from './WSMessage';
 class Room extends LoggerClass {
-
 	static MAX_PLAYERS = 4;
 
 	private uuid: string;
@@ -18,14 +17,20 @@ class Room extends LoggerClass {
 	private players: Map<Websocket, string>;
 	private gameState: GameState;
 	private scrabbleGame: Scrabble | null;
+	private visibility: RoomVisibility;
 
-	constructor(uuid: string = v4()) {
+	constructor(uuid: string = v4(), visibility: RoomVisibility) {
 		super(`Room.${uuid}`);
 		this.uuid = uuid;
 		this.gameState = 'waiting';
 		this.players = new Map();
 		this.scrabbleGame = null;
 		this.host = undefined;
+		if(visibility === 'PRIVATE' || visibility === 'PUBLIC'){
+			this.visibility = visibility;
+		}else{
+			this.visibility = 'PUBLIC';
+		}
 	}
 
 	joinRoom(ws: Websocket, name: string) {
@@ -148,7 +153,7 @@ class Room extends LoggerClass {
 
 	getUUID(asJoinUrl?: boolean) {
 		return asJoinUrl
-			? `${process.env.URL_WS}:${process.env.PORT}/ws/${this.uuid}`
+			? `${process.env.URL}:${process.env.PORT}/ws/${this.uuid}`
 			: this.uuid;
 	}
 
@@ -164,7 +169,7 @@ class Room extends LoggerClass {
 		return this.players.get(ws);
 	}
 
-	getPlayerCount() : number{
+	getPlayerCount() {
 		return this.players.size;
 	}
 
@@ -172,8 +177,12 @@ class Room extends LoggerClass {
 		return this.players.size === 0;
 	}
 
-	isFull(): boolean{
+	isFull() {
 		return this.players.size === Room.MAX_PLAYERS;
+	}
+
+	isPublic(){
+		return this.visibility === 'PUBLIC';
 	}
 
 	hasName(name: string) {

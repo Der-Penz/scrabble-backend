@@ -41,6 +41,7 @@ Responses will have a `content` property where everything response related is lo
 -   **Method:** `POST`
 -   **URL Params:**
     `id?=[string]`Custom id for your room with which other user can join easily. If no id is provided a random one will be used.
+      `visibility?=['PUBLIC' | 'PRIVATE']` public if the room should be listed as opened room. I no visibility is provided 'PUBLIC' will be the default value.
 -   **Body:** **-**
 
 -   **Response:**
@@ -115,6 +116,34 @@ Responses will have a `content` property where everything response related is lo
                     "idToCheck": "test",
                     "exists": false
                   }
+            }
+            ```
+</details>
+<br>
+<details>
+<summary><code>GET</code> <b>Get open rooms:</b> <code>/room/opened</code></summary>
+    Endpoint for checking if a room with a specific id already exists
+
+-   **URL:** `/room/opened`
+-   **Method:** `GET`
+-   **URL Params:** **-**
+-   **Body:** **-**
+
+-   **Response:**
+      - Open rooms
+        -   **Code:** `200`🟢
+        -   **Example:**
+            ```json
+             {
+              "content": [
+                {
+                  "roomID": "test",
+                  "roomJoinUrl": "http://localhost:8808/ws/test",
+                  "playerCount": 1,
+                  "gameState": "waiting",
+                  "host": "Steve"
+                }
+              ]
             }
             ```
 </details>

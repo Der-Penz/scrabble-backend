@@ -30,6 +30,6 @@ app.listen(process.env.PORT, () =>
 );
 
 //Debugging
-const room = new Room('debugging');
+const room = new Room('debugging', 'PUBLIC');
 log(room.getUUID(true));
 GameHandler.instance.addRoom(room);

@@ -40,6 +40,10 @@ class Board {
 				);
 			}
 		}
+
+		this.placeTile(new PositionedLetterTile(1,5, getLetterTile('B')))
+		this.placeTile(new PositionedLetterTile(1,6, getLetterTile('O')))
+		this.placeTile(new PositionedLetterTile(1,7, getLetterTile('W')))
 	}
 
 	getBoard(): BoardTile[][] {

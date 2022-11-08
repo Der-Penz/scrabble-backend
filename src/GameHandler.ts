@@ -56,6 +56,10 @@ class GameHandler extends LoggerClass {
 	getRoom(roomID: string): Room {
 		return this.openRooms.find((room) => room.getUUID() === roomID);
 	}
+
+	getPublicRooms(): Room[] {
+		return this.openRooms.filter((room) => room.isPublic() && !room.isStarted());
+	}
 }
 
 export default GameHandler;
