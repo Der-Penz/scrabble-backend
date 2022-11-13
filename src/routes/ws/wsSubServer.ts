@@ -57,16 +57,17 @@ wsServer.ws('/:roomID', function (ws, req) {
 				try {
 					if (message.hasContent()) {
 						objectiveType =
-							message.getContent().objectiveType.toUpperCase() ||
-							'BASE';
-						points = message.getContent().points || 50;
-						minutes = message.getContent().minutes || 20;
+						message.getContent().objectiveType.toUpperCase() ||
+						'BASE';
+						points = message.getContent().points as number;
+						minutes = message.getContent().minutes as number;
 					}
 				} catch (err) {
-					console.error(err);
+					points= 50;
+					minutes = 20;
 				}
 
-				let objective;
+				let objective : BaseObjective;
 				switch (objectiveType as Objective) {
 					case 'POINT': {
 						objective = new PointObjective(points);
@@ -95,6 +96,10 @@ wsServer.ws('/:roomID', function (ws, req) {
 			return;
 		}
 
+		if (message.getAction() === 'game:move:forfeit') {
+			roomToJoin.getGame().forfeit();
+		}
+
 		if (
 			roomToJoin.getPlayer(ws) !==
 			roomToJoin.getGame().currentPlayerName()
@@ -103,10 +108,6 @@ wsServer.ws('/:roomID', function (ws, req) {
 		}
 
 		//actions
-		if (message.getAction() === 'game:move:forfeit') {
-			roomToJoin.getGame().forfeit();
-		}
-
 		if (message.getAction() === 'game:move:skip') {
 			roomToJoin.getGame().skip();
 		}
