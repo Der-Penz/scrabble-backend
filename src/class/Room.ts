@@ -135,7 +135,7 @@ class Room extends LoggerClass {
 			minutes = objective.getTime();
 		}
 		if (objective instanceof PointObjective) {
-			minutes = objective.getPointsToWin();
+			points = objective.getPointsToWin();
 		}
 
 		this.broadcastMessage(
