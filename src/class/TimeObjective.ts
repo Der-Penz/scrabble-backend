@@ -2,14 +2,14 @@ import BaseObjective from './BaseObjective';
 import Scrabble from './Scrabble';
 
 class TimeObjective extends BaseObjective {
-	private millisToPlay: number;
+	private timeToPlay: number;
 	private startTime: number;
 
 	constructor(millisToPlay: number) {
 		super();
 		this.type = 'TIME';
 		this.startTime = Date.now();
-		this.millisToPlay = millisToPlay;
+		this.timeToPlay = millisToPlay;
 	}
 
 	static SECONDS_TO_MILLIS(seconds: number) {
@@ -21,7 +21,7 @@ class TimeObjective extends BaseObjective {
 	}
 
 	checkForGameEnd(currentGame: Scrabble): boolean {
-		if (Date.now() > this.startTime + this.millisToPlay) {
+		if (this.getLeftTime() <= 0) {
 			return true;
 		}
 
@@ -29,7 +29,11 @@ class TimeObjective extends BaseObjective {
 	}
 
 	getTime(){
-		return this.millisToPlay;
+		return this.timeToPlay;
+	}
+
+	getLeftTime(){
+		return Math.max((this.timeToPlay + this.startTime) - Date.now(), 0);
 	}
 }
 

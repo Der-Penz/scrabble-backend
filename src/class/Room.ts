@@ -26,9 +26,9 @@ class Room extends LoggerClass {
 		this.players = new Map();
 		this.scrabbleGame = null;
 		this.host = undefined;
-		if(visibility === 'PRIVATE' || visibility === 'PUBLIC'){
+		if (visibility === 'PRIVATE' || visibility === 'PUBLIC') {
 			this.visibility = visibility;
-		}else{
+		} else {
 			this.visibility = 'PUBLIC';
 		}
 	}
@@ -129,14 +129,13 @@ class Room extends LoggerClass {
 		let minutes = 0;
 		let points = 0;
 		if (objective instanceof TimeObjective) {
-			minutes = (objective as TimeObjective).getTime() / 60 / 1000;
+			minutes = objective.getTime();
 		}
 		if (objective instanceof SeparatedTimeObjective) {
-			minutes =
-				(objective as SeparatedTimeObjective).getTime() / 60 / 1000;
+			minutes = objective.getTime();
 		}
 		if (objective instanceof PointObjective) {
-			minutes = (objective as PointObjective).getPointsToWin();
+			minutes = objective.getPointsToWin();
 		}
 
 		this.broadcastMessage(
@@ -146,6 +145,17 @@ class Room extends LoggerClass {
 				points: points,
 			})
 		);
+
+		this.scrabbleGame.getBenches().forEach((bench, name) => {
+			this.sendMessage(
+				new WSMessage('game:next', {
+					benchOwner: name,
+					bench: bench,
+				}),
+				name
+			);
+		});
+
 		this.getGame().skip();
 
 		return this;
@@ -181,7 +191,7 @@ class Room extends LoggerClass {
 		return this.players.size === Room.MAX_PLAYERS;
 	}
 
-	isPublic(){
+	isPublic() {
 		return this.visibility === 'PUBLIC';
 	}
 

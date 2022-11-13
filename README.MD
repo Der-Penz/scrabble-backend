@@ -321,7 +321,7 @@ To handle the communication each message has a `action` to define what to do wit
     * **Message:** 
         * `bag` : { tiles : { char: string, points : number }[] }
         * `board` : { x: number, y: number, placedTile: { char: string, points: number }, factor?: 2 | 3, type?: 'WORD' | 'LETTER', used?: boolean }[][]
-        * `players` : { [playerName] : number }
+        * `players` : { [name: string] : {points: number, timeLeft: number} } Each player name with his current points and his time left in milliseconds
         * `currentPlayer` : string
 
     * **Example:**
@@ -369,9 +369,16 @@ To handle the communication each message has a `action` to define what to do wit
               ],
               "currentPlayer": "Steve",
               "players": 
-                  {
-                    "Steve": 0
+                {
+                 "sleepy lizard": {
+                    "points": 0,
+                    "timeLeft": 5999999
+                  },
+                  "tired crow": {
+                      "points": 0,
+                      "timeLeft": 5999999
                   }
+                }
           }
         }
         ```
@@ -381,11 +388,11 @@ To handle the communication each message has a `action` to define what to do wit
 
     <details>
     <summary><code>game:next</code></summary>
-        Send from the server to the client who's turn it is . Contains information about the players bench
+        Send from the server to the client who's turn it is and on start to everyone. Contains information about the players bench
 
     * **Action:** `game:next`
     * **Message:** 
-        * `currentPlayer` : string
+        * `benchOwner` : string
         * `bench` : { owner: string, maxTiles: number, tilesOnHand: { char: string, points: number }[], points: number }
 
     * **Example:**
@@ -393,7 +400,7 @@ To handle the communication each message has a `action` to define what to do wit
         {
           "action": "game:next",
           "message": {
-            "currentPlayer": "Steve",
+            "benchOwner": "Steve",
             "bench": {
               "owner": "Steve",
               "maxTiles": 7,

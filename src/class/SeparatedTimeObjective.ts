@@ -3,7 +3,7 @@ import Bench from './Bench';
 import Scrabble from './Scrabble';
 
 class SeparatedTimeObjective extends BaseObjective {
-	private millisToPlay: number;
+	private timeToPlay: number;
 	private playerPastMillis: Map<string, number>;
 	private pastMillisSinceLastSwap: number;
 
@@ -11,7 +11,7 @@ class SeparatedTimeObjective extends BaseObjective {
 		super();
 
 		this.type = 'SEPARATED_TIME';
-		this.millisToPlay = millisToPlay;
+		this.timeToPlay = millisToPlay;
 		this.pastMillisSinceLastSwap = Date.now();
 		this.playerPastMillis = new Map();
 	}
@@ -30,17 +30,16 @@ class SeparatedTimeObjective extends BaseObjective {
 	}
 
 	calculateWinner(benches: Map<string, Bench>) {
-		const { players: oldPlayers } =
-			super.calculateWinner(benches);
+		const { players: oldPlayers } = super.calculateWinner(benches);
 
 		const players = {};
-		let winner : { name: string, points: number } = null;
+		let winner: { name: string; points: number } = null;
 		benches.forEach((bench, name) => {
 			let points = oldPlayers[name];
 
-			if (this.playerPastMillis.get(name) > this.millisToPlay) {
+			if (this.playerPastMillis.get(name) > this.timeToPlay) {
 				const difference =
-					this.playerPastMillis.get(name) - this.millisToPlay;
+					this.playerPastMillis.get(name) - this.timeToPlay;
 
 				//minus point for every 15 more seconds the player needed
 				points -= Math.floor(difference / 1000 / 15 + 1);
@@ -61,8 +60,16 @@ class SeparatedTimeObjective extends BaseObjective {
 		return { players, winner };
 	}
 
-	getTime(){
-		return this.millisToPlay;
+	getTime() {
+		return this.timeToPlay;
+	}
+
+	getLeftTime(who: string) {
+		if (this.playerPastMillis.has(who)) {
+			return this.timeToPlay - this.playerPastMillis.get(who)!;
+		} else {
+			return this.timeToPlay;
+		}
 	}
 }
 

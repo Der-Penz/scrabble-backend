@@ -10,6 +10,8 @@ import Dictionary from './Dictionary';
 import Room from './Room';
 import WSMessage from './WSMessage';
 import BaseObjective from './BaseObjective';
+import TimeObjective from './TimeObjective';
+import SeparatedTimeObjective from './SeparatedTimeObjective';
 
 class Scrabble {
 	private board: Board;
@@ -22,14 +24,14 @@ class Scrabble {
 	constructor(
 		room: Room,
 		players: string[],
-		objective?: BaseObjective,
+		objective: BaseObjective,
 		fillMap?: string
 	) {
 		this.board = new Board();
 		this.bag = new Bag(fillMap);
 		this.room = room;
 		this.currentPlayerIndex = this.benches.size - 1;
-		this.objective = objective || new BaseObjective();
+		this.objective = objective;
 
 		players.forEach((player) =>
 			this.benches.set(
@@ -79,7 +81,7 @@ class Scrabble {
 		);
 	}
 
-	forfeit(){
+	forfeit() {
 		this.endGame();
 	}
 
@@ -104,7 +106,7 @@ class Scrabble {
 
 		this.room.sendMessage(
 			new WSMessage('game:next', {
-				currentPlayer: playerName,
+				benchOwner: playerName,
 				bench: bench,
 			}),
 			playerName
@@ -114,9 +116,20 @@ class Scrabble {
 	}
 
 	private broadcastGameState() {
-		const players = {};
+		const players: {
+			[name: string]: { points: number; timeLeft: number };
+		} = {} as any;
+
+		let objective = this.getObjective();
 		this.benches.forEach((bench, name) => {
-			players[name] = bench.getPoints();
+			let timeLeft = 0;
+			if (objective instanceof TimeObjective) {
+				timeLeft = objective.getLeftTime();
+			} else if (objective instanceof SeparatedTimeObjective) {
+				timeLeft = objective.getLeftTime(name);
+			}
+
+			players[name] = { points: bench.getPoints(), timeLeft };
 		});
 
 		//send all the new board and the bag
@@ -128,20 +141,6 @@ class Scrabble {
 				players: players,
 			})
 		);
-	}
-
-	/**
-	 * @deprecated
-	 */
-	private drawTile(): boolean {
-		const playerName = this.currentPlayerName();
-
-		if (this.benches.get(playerName).isFull()) {
-			return false;
-		}
-		this.benches.get(this.currentPlayerName()).addTile(this.bag.drawOne());
-
-		return true;
 	}
 
 	private getWordDirection(
