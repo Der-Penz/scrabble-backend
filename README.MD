@@ -94,6 +94,19 @@ Responses will have a `content` property where everything response related is lo
               "content": {}
             }
             ```
+    -   Room with id does not exist
+        -   **Code:** `400`🔴
+        -   **Problem:** No room with the given id exists
+        -   **Example:** sending over an id="notexisting" of a non existing room.
+            ```json
+            {
+              "error": "RoomNotExisting",
+              "errorMessage": "room with the given id does not exist",
+              "content": {
+                "idToCheck": "notexisting"
+              }
+            }
+            ```
     -   Game running or ended
         -   **Code:** `400`🔴
         -   **Problem:** Game is already playing or game ended 

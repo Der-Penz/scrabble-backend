@@ -50,6 +50,18 @@ apiRouter.get('/room/exists', (req, res) => {
 
 	const room = GameHandler.instance.getRoom(toCheck);
 
+	if(!room){
+		return res.status(400).send(
+			new JsonErrorResponse(
+				'RoomNotExisting',
+				'room with the given id does not exist',
+				{
+					idToCheck: toCheck,
+				}
+			).json()
+		);
+	}
+
 	if (room.isStarted() || room.hasEnded()) {
 		return res.status(400).send(
 			new JsonErrorResponse(
