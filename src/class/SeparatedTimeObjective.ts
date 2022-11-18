@@ -29,7 +29,7 @@ class SeparatedTimeObjective extends BaseObjective {
 		return super.checkForGameEnd(currentGame);
 	}
 
-	calculateWinner(benches: Map<string, Bench>) {
+	calculateWinner(benches: Map<string, Bench>, surrenderer?: string) {
 		const { players: oldPlayers } = super.calculateWinner(benches);
 
 		const players = {};
@@ -46,6 +46,11 @@ class SeparatedTimeObjective extends BaseObjective {
 			}
 
 			players[name] = points;
+
+			if(surrenderer === name){
+				return;
+			}
+
 			if (winner === null) {
 				winner = { points: points, name: name };
 				return;

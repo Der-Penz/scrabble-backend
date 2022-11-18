@@ -23,7 +23,7 @@ class BaseObjective {
 		return false;
 	}
 
-	calculateWinner(benches: Map<string, Bench>) {
+	calculateWinner(benches: Map<string, Bench>, surrenderer?: string) {
 		const players = {};
 		let winner: { name: string; points: number } = null;
 		benches.forEach((bench, name) => {
@@ -35,6 +35,10 @@ class BaseObjective {
 			const points = bench.getPoints() - minusPoints;
 
 			players[name] = points;
+
+			if(surrenderer === name){
+				return;
+			}
 
 			if (winner === null) {
 				winner = { points: points, name: name };

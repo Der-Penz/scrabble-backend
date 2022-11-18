@@ -65,24 +65,27 @@ class Scrabble {
 		return this.benches.get(this.currentPlayerName());
 	}
 
-	private endGame() {
+	private endGame(surrenderer?: string) {
 		this.room.log('Game ended');
 		this.broadcastGameState();
 
 		const { players, winner } = this.objective.calculateWinner(
-			this.benches
+			this.benches,
+			surrenderer
 		);
 
 		this.room.broadcastMessage(
 			new WSMessage('game:end', {
 				players: players,
 				winner: winner,
+				surrendered: surrenderer !== undefined,
+				surrenderer
 			})
 		);
 	}
 
-	forfeit() {
-		this.endGame();
+	forfeit(who: string) {
+		this.endGame(who);
 	}
 
 	private nextPlayer() {
