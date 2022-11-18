@@ -105,16 +105,14 @@ class Board {
 			}
 			const letterTile = tile.getTile();
 			if (tile instanceof MultiplierBoardTile) {
-				const multipliers = (
-					tile as MultiplierBoardTile
-				).useMultiplier();
+				const multipliers = tile.useMultiplier();
 
-				if (multipliers.type === 'LETTER') {
+				if (multipliers === null) {
+					points += letterTile.getPoints();
+				} else if (multipliers.type === 'LETTER') {
 					points += letterTile.getPoints() * multipliers.factor;
 				} else if (multipliers.type === 'WORD') {
 					wordMultiplier *= multipliers.factor;
-					points += letterTile.getPoints();
-				} else {
 					points += letterTile.getPoints();
 				}
 			} else {
