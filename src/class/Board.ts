@@ -109,12 +109,12 @@ class Board {
 					tile as MultiplierBoardTile
 				).useMultiplier();
 
-				if (multipliers === null) {
-					points += letterTile.getPoints();
-				} else if (multipliers.type === 'LETTER') {
+				if (multipliers.type === 'LETTER') {
 					points += letterTile.getPoints() * multipliers.factor;
 				} else if (multipliers.type === 'WORD') {
-					wordMultiplier += multipliers.factor;
+					wordMultiplier *= multipliers.factor;
+					points += letterTile.getPoints();
+				} else {
 					points += letterTile.getPoints();
 				}
 			} else {
