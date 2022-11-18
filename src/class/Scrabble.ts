@@ -443,7 +443,7 @@ class Scrabble {
 			}
 		}
 
-		if (!Dictionary.instance.isWordValid(word)) {
+		if (!Dictionary.instance.isWordValid(word) && positionsToCalculatePointsLater.length === 0) {
 			return new JsonErrorResponse(
 				'InvalidWord',
 				'Word is not a official allowed Scrabble word',
