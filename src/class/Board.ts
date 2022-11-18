@@ -3,7 +3,6 @@ import PositionedLetterTile from './PositionedLetterTile';
 import BoardTile from './BoardTile';
 import MultiplierBoardTile from './MultiplierBoardTile';
 import { getBoardTileForNumber, getLetterTile } from './Helpers';
-import LetterTile from './LetterTile';
 
 class Board {
 	static readonly DEFAULT_MAP = [
@@ -40,10 +39,6 @@ class Board {
 				);
 			}
 		}
-
-		this.placeTile(new PositionedLetterTile(1,5, getLetterTile('B')))
-		this.placeTile(new PositionedLetterTile(1,6, getLetterTile('O')))
-		this.placeTile(new PositionedLetterTile(1,7, getLetterTile('W')))
 	}
 
 	getBoard(): BoardTile[][] {
