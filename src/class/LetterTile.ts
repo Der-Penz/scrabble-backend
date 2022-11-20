@@ -2,41 +2,38 @@ import Char from '../types/Char';
 
 class LetterTile {
 	static DEFAULT_TILES_POINTS = {
-		A: 1,
 		E: 1,
-		N: 1,
-		S: 1,
+		A: 1,
 		I: 1,
+		O: 1,
+		N: 1,
 		R: 1,
 		T: 1,
+		L: 1,
+		S: 1,
 		U: 1,
-		D: 1,
 
-		H: 2,
+		D: 2,
 		G: 2,
-		L: 2,
-		O: 2,
-
-		M: 3,
+		
 		B: 3,
-		W: 3,
-		Z: 3,
+		C: 3,
+		M: 3,
+		P: 3,	
 
-		C: 4,
 		F: 4,
-		K: 4,
-		P: 4,
+		H: 4,
+		V: 4,
+		W: 4,
+		Y: 4,
 
-		Ä: 6,
-		J: 6,
-		Ü: 6,
-		V: 6,
+		K: 5,
 
-		Ö: 8,
+		J: 8,
 		X: 8,
 
 		Q: 10,
-		Y: 10,
+		Z: 10,
 
 		'0': 0,
 	};

@@ -1,15 +1,16 @@
 import Char from '../types/Char';
 import { getLetterTile } from './Helpers';
-import JokerLetterTile from './JokerLetterTile';
 import LetterTile from './LetterTile';
 
-const DEFAULT_BAG_FILL_MAP =
+const DEFAULT_BAG_FILL_MAP_ENG =
+	'00AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ';
+const DEFAULT_BAG_FILL_MAP_GER =
 	'EEEEEEEEEEEEEEENNNNNNNNNSSSSSSSIIIIIIRRRRRRTTTTTTUUUUUUAAAAADDDDHHHHGGGLLLOOOMMMMBBWZCCFFKKPÄJÜVÖXQY00';
 
 class Bag {
 	private tiles: LetterTile[] = [];
 
-	constructor(fillMap: string = DEFAULT_BAG_FILL_MAP) {
+	constructor(fillMap: string = DEFAULT_BAG_FILL_MAP_ENG) {
 		fillMap.split('').forEach((char) => {
 			this.tiles.push(getLetterTile(char as Char));
 		});
@@ -27,7 +28,7 @@ class Bag {
 	drawMany(amount: number = 1) {
 		const tiles: LetterTile[] = [];
 		for (let i = 0; i < amount; i++) {
-			if(this.getCount() === 0){
+			if (this.getCount() === 0) {
 				break;
 			}
 			tiles.push(this.drawOne());
