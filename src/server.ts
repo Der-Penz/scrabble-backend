@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(cors());
 app.use('/*', logRouter);
 
-app.use('/api/v1', roomRouter);
+app.use('/api/v1/room', roomRouter);
 
 app.use('/ws', wsSubServer);
 

@@ -8,10 +8,10 @@ import { RoomVisibility } from '../../types/RoomVisibility';
 
 const roomRouter = express.Router();
 
-roomRouter.post('/room/create', (req, res) => {
+roomRouter.post('/create', (req, res) => {
 	const customID = req.query.id as string;
 	const visibility = req.query.visibility as RoomVisibility;
-
+	
 	let newRoom;
 	if (GameHandler.instance.getRoom(customID)) {
 		return res.status(400).send(
@@ -33,7 +33,7 @@ roomRouter.post('/room/create', (req, res) => {
 	);
 });
 
-roomRouter.get('/room/exists', (req, res) => {
+roomRouter.get('/exists', (req, res) => {
 	const toCheck = req.query.id as string;
 
 	if (!toCheck) {
@@ -82,7 +82,7 @@ roomRouter.get('/room/exists', (req, res) => {
 	);
 });
 
-roomRouter.get('/room/opened', (req, res) => {
+roomRouter.get('/opened', (req, res) => {
 	const rooms = GameHandler.instance.getPublicRooms().map((room) => ({
 		roomID: room.getUUID(),
 		roomJoinUrl: room.getUUID(true),
