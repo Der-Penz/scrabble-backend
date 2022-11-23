@@ -6,9 +6,9 @@ import JsonErrorResponse from '../../class/JsonErrorResponse';
 import GameState from '../../types/GameState';
 import { RoomVisibility } from '../../types/RoomVisibility';
 
-const apiRouter = express.Router();
+const roomRouter = express.Router();
 
-apiRouter.post('/room/create', (req, res) => {
+roomRouter.post('/room/create', (req, res) => {
 	const customID = req.query.id as string;
 	const visibility = req.query.visibility as RoomVisibility;
 
@@ -33,7 +33,7 @@ apiRouter.post('/room/create', (req, res) => {
 	);
 });
 
-apiRouter.get('/room/exists', (req, res) => {
+roomRouter.get('/room/exists', (req, res) => {
 	const toCheck = req.query.id as string;
 
 	if (!toCheck) {
@@ -82,7 +82,7 @@ apiRouter.get('/room/exists', (req, res) => {
 	);
 });
 
-apiRouter.get('/room/opened', (req, res) => {
+roomRouter.get('/room/opened', (req, res) => {
 	const rooms = GameHandler.instance.getPublicRooms().map((room) => ({
 		roomID: room.getUUID(),
 		roomJoinUrl: room.getUUID(true),
@@ -94,4 +94,4 @@ apiRouter.get('/room/opened', (req, res) => {
 	return res.status(200).send(new JsonResponse(rooms).json());
 });
 
-export default apiRouter;
+export default roomRouter;

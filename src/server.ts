@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import logRouter from './routes/middleware/logger';
-import apiRouter from './routes/api/apiRouter';
+import roomRouter from './routes/api/roomRouter';
 import wsSubServer from './routes/ws/wsSubServer';
 import GameHandler from './GameHandler';
 import Room from './class/Room';
@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(cors());
 app.use('/*', logRouter);
 
-app.use('/api/v1', apiRouter);
+app.use('/api/v1', roomRouter);
 
 app.use('/ws', wsSubServer);
 
