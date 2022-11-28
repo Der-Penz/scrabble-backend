@@ -1,18 +1,19 @@
-import JsonErrorResponse from './JsonErrorResponse';
-import WordDirection from '../types/WordDirection';
 import Char from '../types/Char';
+import WordDirection from '../types/WordDirection';
 import Bag from './Bag';
+import BaseObjective from './BaseObjective';
 import Bench from './Bench';
 import Board from './Board';
 import BoardPosition from './BoardPosition';
-import PositionedLetterTile from './PositionedLetterTile';
 import Dictionary from './Dictionary';
-import Room from './Room';
-import WSMessage from './WSMessage';
-import BaseObjective from './BaseObjective';
-import TimeObjective from './TimeObjective';
-import SeparatedTimeObjective from './SeparatedTimeObjective';
+import JsonErrorResponse from './JsonErrorResponse';
 import Move from './Move';
+import PlaceMove from './PlaceMove';
+import PositionedLetterTile from './PositionedLetterTile';
+import Room from './Room';
+import SeparatedTimeObjective from './SeparatedTimeObjective';
+import TimeObjective from './TimeObjective';
+import WSMessage from './WSMessage';
 
 class Scrabble {
 	private board: Board;
@@ -144,7 +145,7 @@ class Scrabble {
 				bag: this.bag,
 				board: this.board.getBoard(),
 				currentPlayer: this.currentPlayerName(),
-				moveHistory: this.moveHistory.map((move) => move.toJson()),
+				moveHistory: this.moveHistory,
 				players: players,
 			})
 		);
@@ -495,7 +496,7 @@ class Scrabble {
 			);
 		}
 
-		const currentMove: Move = new Move(this.currentPlayerName());
+		const currentMove = new PlaceMove(this.currentPlayerName());
 
 		wordTiles.forEach((positionedTile) =>
 			this.currentBench().useTile(positionedTile.tile.getChar())
