@@ -12,6 +12,7 @@ import PlaceMove from './PlaceMove';
 import PositionedLetterTile from './PositionedLetterTile';
 import Room from './Room';
 import SeparatedTimeObjective from './SeparatedTimeObjective';
+import SkipMove from './SkipMove';
 import TimeObjective from './TimeObjective';
 import TradeMove from './TradeMove';
 import WSMessage from './WSMessage';
@@ -542,6 +543,7 @@ class Scrabble {
 	}
 
 	skip() {
+		this.moveHistory.push(new SkipMove(this.currentPlayerName()));
 		this.nextPlayer();
 	}
 }
