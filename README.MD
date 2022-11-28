@@ -336,6 +336,13 @@ To handle the communication each message has a `action` to define what to do wit
         * `board` : { x: number, y: number, placedTile: { char: string, points: number }, factor?: 2 | 3, type?: 'WORD' | 'LETTER', used?: boolean }[][]
         * `players` : { [name: string] : {points: number, timeLeft: number} } Each player name with his current points and his time left in milliseconds
         * `currentPlayer` : string
+        * `moveHistory` : [
+            owner: string,
+            timestamp: number:,
+            type: 'Place' | 'Skip' | 'Trade' | 'Forfeit',
+           type === 'Forfeit' && forfeiter: string, 
+           type === 'Trade' && tradedTiles: { char: string, points: number }[], newTiles: { char: string, points: number }[],
+           type === 'Place' && words: { word: string, points: number, start: { x: number, y: number}, end: { x: number, y: number}}[] ]
 
     * **Example:**
         ```json
@@ -381,6 +388,34 @@ To handle the communication each message has a `action` to define what to do wit
                 ...
               ],
               "currentPlayer": "Steve",
+              "moveHistory": [
+                {
+                  "owner": "steve",
+                  "type": "Skip",
+                  "timestamp": 1669653994481,
+                },
+                {
+                  "owner": "alex",
+                  "type": "Place",
+                  "timestamp": 1669653995430,
+                  "words": [
+                    {
+                      {
+                        "end": {
+                          "x": 9,
+                          "y": 9
+                        },
+                        "start": {
+                          "x": 9,
+                          "y": 7
+                        },
+                        "points": 8,
+                        "word": "EVO"
+                      }
+                    }
+                  ]
+                }
+              ]
               "players": 
                 {
                  "sleepy lizard": {
