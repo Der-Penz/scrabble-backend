@@ -156,7 +156,7 @@ class Room extends LoggerClass {
 			);
 		});
 
-		this.getGame().skip();
+		this.scrabbleGame.broadcastGameState();
 
 		return this;
 	}

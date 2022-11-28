@@ -37,7 +37,7 @@ class Scrabble {
 		this.bag = new Bag(fillMap);
 		this.room = room;
 		this.moveHistory = [];
-		this.currentPlayerIndex = this.benches.size - 1;
+		this.currentPlayerIndex = 0;
 		this.objective = objective;
 
 		players.forEach((player) =>
@@ -46,6 +46,7 @@ class Scrabble {
 				new Bench(player, this.bag.drawMany(Bench.BASE_MAX_TILES))
 			)
 		);
+
 	}
 
 	getBag() {
@@ -126,7 +127,7 @@ class Scrabble {
 		this.broadcastGameState();
 	}
 
-	private broadcastGameState() {
+	broadcastGameState() {
 		const players: {
 			[name: string]: { points: number; timeLeft: number };
 		} = {} as any;
