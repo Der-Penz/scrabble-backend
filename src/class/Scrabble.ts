@@ -6,6 +6,7 @@ import Bench from './Bench';
 import Board from './Board';
 import BoardPosition from './BoardPosition';
 import Dictionary from './Dictionary';
+import ForfeitMove from './ForfeitMove';
 import JsonErrorResponse from './JsonErrorResponse';
 import Move from './Move';
 import PlaceMove from './PlaceMove';
@@ -91,6 +92,7 @@ class Scrabble {
 	}
 
 	forfeit(who: string) {
+		this.moveHistory.push(new ForfeitMove(this.currentPlayerName(), who));
 		this.endGame(who);
 	}
 
