@@ -338,7 +338,7 @@ class Scrabble {
 							positionedTiles[0].y - 1
 					  ),
 				direction
-			) || positionedTiles[0];
+			) || new BoardPosition(positionedTiles[0].x, positionedTiles[0].y);
 
 		let word = '';
 		let positionsToCalculatePointsLater: Array<{
@@ -347,7 +347,7 @@ class Scrabble {
 		}> = [];
 		let nextToAlreadyPlacedTile = false;
 		const wordTiles: PositionedLetterTile[] = [];
-
+		
 		//read the full word and check for errors
 		let currentPosition = startPos;
 		let endPos = startPos;
