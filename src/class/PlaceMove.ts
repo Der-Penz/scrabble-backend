@@ -1,11 +1,11 @@
-import { PlacedWord } from '../types/PlacedWord';
+import { PlacedWord } from '../types/MoveType';
 import Move from './Move';
 
 class PlaceMove extends Move {
 	private words: PlacedWord[];
 
 	constructor(owner: string, words: PlacedWord[] = []) {
-		super(owner);
+		super(owner, 'Place');
 		this.words = words;
 	}
 

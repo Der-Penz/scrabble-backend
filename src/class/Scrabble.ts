@@ -13,6 +13,7 @@ import PositionedLetterTile from './PositionedLetterTile';
 import Room from './Room';
 import SeparatedTimeObjective from './SeparatedTimeObjective';
 import TimeObjective from './TimeObjective';
+import TradeMove from './TradeMove';
 import WSMessage from './WSMessage';
 
 class Scrabble {
@@ -297,9 +298,13 @@ class Scrabble {
 			return [...prev, currentBench.useTile(char)];
 		}, []);
 
-		const tradedTiles = this.bag.swap(toTrade);
+		const newTiles = this.bag.swap(toTrade);
 
-		tradedTiles.forEach((tile) => currentBench.addTile(tile));
+		newTiles.forEach((tile) => currentBench.addTile(tile));
+
+		this.moveHistory.push(
+			new TradeMove(this.currentPlayerName(), toTrade, newTiles)
+		);
 
 		this.nextPlayer();
 	}

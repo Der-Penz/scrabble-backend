@@ -1,10 +1,14 @@
+import { MoveType } from '../types/MoveType';
+
 abstract class Move {
 	private owner: string;
 	private timestamp: number;
+	private type: MoveType;
 
-	constructor(owner: string) {
+	constructor(owner: string, type: MoveType) {
 		this.owner = owner;
 		this.timestamp = Date.now();
+		this.type = type;
 	}
 
 	getTimestamp() {
@@ -13,6 +17,10 @@ abstract class Move {
 
 	getPlacer() {
 		return this.owner;
+	}
+
+	getType() {
+		return this.type;
 	}
 }
 
