@@ -2,7 +2,7 @@ class JsonResponse {
 	protected content: object;
 
 	constructor(content: object) {
-		this.content = content;
+		this.content = content || {};
 	}
 
 	json(): object {

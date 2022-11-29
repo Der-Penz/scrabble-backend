@@ -1,7 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
+import LoggerClass from './LoggerClass';
 
-class Dictionary {
+class Dictionary extends LoggerClass {
 	static instance: Dictionary = new Dictionary();
 	private allWords: string[];
 	private alreadyValidWords: string[];
@@ -9,20 +10,25 @@ class Dictionary {
 	private charToIndexMap = new Map<string, number>();
 
 	constructor() {
-		this.loadWords();
+		super('Dictionary');
 		this.allWords = [];
 		this.alreadyInValidWords = [];
 		this.alreadyValidWords = [];
+		this.loadWords();
 	}
 
-	async loadWords() {
-		const file = await fs.readFile(
-			path.join(__dirname, '../assets/words.txt')
-		);
+	private async loadWords() {
+		try {
+			const file = await fs.readFile(
+				path.join(__dirname, '../assets/words.txt')
+			);
 
-		this.allWords = file.toString().split(/\r?\n/);
-		for (let i = this.allWords.length - 1; i > 0; i--) {
-			this.charToIndexMap.set(this.allWords[i].charAt(0), i);
+			this.allWords = file.toString().split(/\r?\n/);
+			for (let i = this.allWords.length - 1; i > 0; i--) {
+				this.charToIndexMap.set(this.allWords[i].charAt(0), i);
+			}
+		} catch (error) {
+			this.log("can't load words");
 		}
 	}
 

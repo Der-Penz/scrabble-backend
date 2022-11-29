@@ -160,6 +160,61 @@ Responses will have a `content` property where everything response related is lo
             }
             ```
 </details>
+<br>
+<details>
+<summary><code>GET</code> <b>Check a word:</b> <code>/word/check</code></summary>
+    Endpoint for checking if a word is valid to use in scrabble
+
+-   **URL:** `/word/check`
+-   **Method:** `GET`
+-   **URL Params:** 
+      `word=[string]` word to check.
+      `definition?=[any]` additional definition of the word, can be anything just needs to be a valid url parameter.
+-   **Body:** **-**
+
+-   **Response:**
+      - No word provided
+        -   **Code:** `400`🔴
+        -   **Example:**
+            ```json
+             {
+              "content": [
+                {
+                  "error": "ClientError",
+                  "errorMessage": "no word provided",
+                  "content": {}
+                }
+              ]
+            }
+            ```
+      - Word provided
+        -   **Code:** `200`🟢
+        -   **Example:**
+            ```json
+             {
+              "content": [
+                {
+                  "word": "mercedes",
+                  "isValid": false
+                }
+              ]
+            }
+            ```
+      - Word with definition provided
+        -   **Code:** `200`🟢
+        -   **Example:**
+            ```json
+             {
+              "content": [
+                {
+                  "word": "game",
+                  "isValid": true,
+                  "definition": "A playful or competitive activity."
+                }
+              ]
+            }
+            ```
+</details>
 
 <br>
 
