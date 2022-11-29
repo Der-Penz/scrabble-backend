@@ -83,6 +83,26 @@ class Board {
 		return this.board[x][y];
 	}
 
+	getWord(start: BoardPosition, end: BoardPosition){
+		const horizontal = this.isWordHorizontal(start, end);
+
+		const mainKey = horizontal ? 'x' : 'y';
+		let word = '';
+		for (let i = start[mainKey]; i <= end[mainKey]; i++) {
+			let letter = '';
+			if(mainKey === 'x'){
+				const tile = this.getTile(i ,start.y).getTile();	
+				letter = tile === null ? '' : tile.getChar();
+
+			}else{
+				const tile = this.getTile(start.x, i).getTile();			
+				letter = tile === null ? '' : tile.getChar();
+			}
+			word += letter;
+		}
+		return word;
+	}
+
 	positionInBounds(x: number, y: number): boolean {
 		return x >= 0 && x < Board.SIZE && y >= 0 && y < Board.SIZE;
 	}

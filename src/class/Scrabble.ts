@@ -1,17 +1,22 @@
-import JsonErrorResponse from './JsonErrorResponse';
-import WordDirection from '../types/WordDirection';
 import Char from '../types/Char';
+import WordDirection from '../types/WordDirection';
 import Bag from './Bag';
+import BaseObjective from './BaseObjective';
 import Bench from './Bench';
 import Board from './Board';
 import BoardPosition from './BoardPosition';
-import PositionedLetterTile from './PositionedLetterTile';
 import Dictionary from './Dictionary';
+import ForfeitMove from './ForfeitMove';
+import JsonErrorResponse from './JsonErrorResponse';
+import Move from './Move';
+import PlaceMove from './PlaceMove';
+import PositionedLetterTile from './PositionedLetterTile';
 import Room from './Room';
-import WSMessage from './WSMessage';
-import BaseObjective from './BaseObjective';
-import TimeObjective from './TimeObjective';
 import SeparatedTimeObjective from './SeparatedTimeObjective';
+import SkipMove from './SkipMove';
+import TimeObjective from './TimeObjective';
+import TradeMove from './TradeMove';
+import WSMessage from './WSMessage';
 
 class Scrabble {
 	private board: Board;
@@ -20,6 +25,7 @@ class Scrabble {
 	private bag: Bag;
 	private objective: BaseObjective;
 	private room: Room;
+	private moveHistory: Move[];
 
 	constructor(
 		room: Room,
@@ -30,7 +36,8 @@ class Scrabble {
 		this.board = new Board();
 		this.bag = new Bag(fillMap);
 		this.room = room;
-		this.currentPlayerIndex = this.benches.size - 1;
+		this.moveHistory = [];
+		this.currentPlayerIndex = 0;
 		this.objective = objective;
 
 		players.forEach((player) =>
@@ -39,6 +46,7 @@ class Scrabble {
 				new Bench(player, this.bag.drawMany(Bench.BASE_MAX_TILES))
 			)
 		);
+
 	}
 
 	getBag() {
@@ -79,12 +87,13 @@ class Scrabble {
 				players: players,
 				winner: winner,
 				surrendered: surrenderer !== undefined,
-				surrenderer
+				surrenderer,
 			})
 		);
 	}
 
 	forfeit(who: string) {
+		this.moveHistory.push(new ForfeitMove(this.currentPlayerName(), who));
 		this.endGame(who);
 	}
 
@@ -118,7 +127,7 @@ class Scrabble {
 		this.broadcastGameState();
 	}
 
-	private broadcastGameState() {
+	broadcastGameState() {
 		const players: {
 			[name: string]: { points: number; timeLeft: number };
 		} = {} as any;
@@ -141,6 +150,7 @@ class Scrabble {
 				bag: this.bag,
 				board: this.board.getBoard(),
 				currentPlayer: this.currentPlayerName(),
+				moveHistory: this.moveHistory,
 				players: players,
 			})
 		);
@@ -292,9 +302,13 @@ class Scrabble {
 			return [...prev, currentBench.useTile(char)];
 		}, []);
 
-		const tradedTiles = this.bag.swap(toTrade);
+		const newTiles = this.bag.swap(toTrade);
 
-		tradedTiles.forEach((tile) => currentBench.addTile(tile));
+		newTiles.forEach((tile) => currentBench.addTile(tile));
+
+		this.moveHistory.push(
+			new TradeMove(this.currentPlayerName(), toTrade, newTiles)
+		);
 
 		this.nextPlayer();
 	}
@@ -324,7 +338,7 @@ class Scrabble {
 							positionedTiles[0].y - 1
 					  ),
 				direction
-			) || positionedTiles[0];
+			) || new BoardPosition(positionedTiles[0].x, positionedTiles[0].y);
 
 		let word = '';
 		let positionsToCalculatePointsLater: Array<{
@@ -333,7 +347,7 @@ class Scrabble {
 		}> = [];
 		let nextToAlreadyPlacedTile = false;
 		const wordTiles: PositionedLetterTile[] = [];
-
+		
 		//read the full word and check for errors
 		let currentPosition = startPos;
 		let endPos = startPos;
@@ -443,7 +457,10 @@ class Scrabble {
 			}
 		}
 
-		if (!Dictionary.instance.isWordValid(word) && positionsToCalculatePointsLater.length === 0) {
+		if (
+			!Dictionary.instance.isWordValid(word) &&
+			positionsToCalculatePointsLater.length === 0
+		) {
 			return new JsonErrorResponse(
 				'InvalidWord',
 				'Word is not a official allowed Scrabble word',
@@ -488,6 +505,8 @@ class Scrabble {
 			);
 		}
 
+		const currentMove = new PlaceMove(this.currentPlayerName());
+
 		wordTiles.forEach((positionedTile) =>
 			this.currentBench().useTile(positionedTile.tile.getChar())
 		);
@@ -500,18 +519,34 @@ class Scrabble {
 		const points = this.board.calculatePoints(startPos, endPos);
 		this.currentBench().addPoints(points);
 
+		currentMove.addWord({
+			end: endPos,
+			start: startPos,
+			points: points,
+			word: word,
+		});
+
 		positionsToCalculatePointsLater.forEach((word) => {
 			const points = this.board.calculatePoints(
 				word.startPos,
 				word.endPos
 			);
 			this.currentBench().addPoints(points);
+
+			currentMove.addWord({
+				points: points,
+				word: this.board.getWord(word.startPos, word.endPos),
+				start: word.startPos,
+				end: word.endPos,
+			});
 		});
 
+		this.moveHistory.push(currentMove);
 		this.nextPlayer();
 	}
 
 	skip() {
+		this.moveHistory.push(new SkipMove(this.currentPlayerName()));
 		this.nextPlayer();
 	}
 }
