@@ -3,6 +3,7 @@ import PositionedLetterTile from './PositionedLetterTile';
 import BoardTile from './BoardTile';
 import MultiplierBoardTile from './MultiplierBoardTile';
 import { getBoardTileForNumber, getLetterTile } from './Helpers';
+import WordDirection from '../types/WordDirection';
 
 class Board {
 	static readonly DEFAULT_MAP = [
@@ -24,6 +25,10 @@ class Board {
 	];
 	static readonly SIZE = 15;
 	static readonly CENTER = (Board.SIZE + 1) / 2;
+	static readonly DIRECTION_KEY: Record<WordDirection, 'x' | 'y'> = {
+		Horizontal: 'x',
+		Vertical: 'y',
+	};
 	private board: BoardTile[][];
 
 	constructor(boardMap: string[] = Board.DEFAULT_MAP) {
@@ -45,29 +50,30 @@ class Board {
 		return this.board;
 	}
 
-	placeWord(tiles: PositionedLetterTile[]): void {
+	placeWord(positionTiles: PositionedLetterTile[]): boolean {
 		let worked = true;
-		tiles.forEach((tile) => {
+		positionTiles.forEach((tile) => {
 			const placed = this.placeTile(tile);
 			if (worked && !placed) {
 				worked = false;
 			}
 		});
+		return worked;
 	}
 
-	placeTile(tile: PositionedLetterTile): boolean {
-		if (!this.positionInBounds(tile.x, tile.y)) {
+	placeTile(positionTile: PositionedLetterTile): boolean {
+		if (!this.positionInBounds(positionTile)) {
 			return false;
 		}
-		this.board[tile.x][tile.y].placeTile(tile.tile);
+		this.board[positionTile.x][positionTile.y].placeTile(positionTile.tile);
 		return true;
 	}
 
-	isTileTaken(x: number, y: number): boolean | null {
-		if (!this.positionInBounds(x, y)) {
+	isTileTaken(position: BoardPosition): boolean | null {
+		if (!this.positionInBounds(position)) {
 			return null;
 		}
-		return this.getTile(x, y).isTaken();
+		return this.getTile(position).isTaken();
 	}
 
 	isEmpty() {
@@ -76,69 +82,52 @@ class Board {
 		);
 	}
 
-	getTile(x, y): BoardTile | null {
-		if (!this.positionInBounds(x, y)) {
+	getTile(position: BoardPosition): BoardTile | null {
+		if (!this.positionInBounds(position)) {
 			return null;
 		}
-		return this.board[x][y];
+		return this.board[position.x][position.y];
 	}
 
-	getWord(start: BoardPosition, end: BoardPosition){
-		const horizontal = this.isWordHorizontal(start, end);
+	getWord(start: BoardPosition, end: BoardPosition) {
+		const sequence = this.getTileSequence(start, end);
 
-		const mainKey = horizontal ? 'x' : 'y';
-		let word = '';
-		for (let i = start[mainKey]; i <= end[mainKey]; i++) {
-			let letter = '';
-			if(mainKey === 'x'){
-				const tile = this.getTile(i ,start.y).getTile();	
-				letter = tile === null ? '' : tile.getChar();
-
-			}else{
-				const tile = this.getTile(start.x, i).getTile();			
-				letter = tile === null ? '' : tile.getChar();
-			}
-			word += letter;
-		}
-		return word;
+		return sequence.reduce(
+			(word, boardTile) =>
+				(word += boardTile === null ? '' : boardTile.getTile()),
+			''
+		);
 	}
 
-	positionInBounds(x: number, y: number): boolean {
-		return x >= 0 && x < Board.SIZE && y >= 0 && y < Board.SIZE;
+	positionInBounds(position: BoardPosition): boolean {
+		return BoardPosition.isValid(position);
 	}
 
 	calculatePoints(start: BoardPosition, end: BoardPosition): number {
 		let points = 0;
 		let wordMultiplier = 1;
 
-		const horizontal = this.isWordHorizontal(start, end);
+		const sequence = this.getTileSequence(start, end);
 
-		const mainKey = horizontal ? 'x' : 'y';
-		const secondaryKey = horizontal ? 'y' : 'x';
-
-		for (let i = start[mainKey]; i <= end[mainKey]; i++) {
-			const tile = horizontal
-				? this.getTile(i, start[secondaryKey])
-				: this.getTile(start[secondaryKey], i);
-			if (tile === null) {
-				continue;
+		sequence.forEach((boardTile) => {
+			if (boardTile === null) {
+				return;
 			}
-			const letterTile = tile.getTile();
-			if (tile instanceof MultiplierBoardTile) {
-				const multipliers = tile.useMultiplier();
 
-				if (multipliers === null) {
-					points += letterTile.getPoints();
-				} else if (multipliers.type === 'LETTER') {
-					points += letterTile.getPoints() * multipliers.factor;
-				} else if (multipliers.type === 'WORD') {
-					wordMultiplier *= multipliers.factor;
+			const letterTile = boardTile.getTile();
+			if (boardTile instanceof MultiplierBoardTile) {
+				const { type, factor } = boardTile.useMultiplier();
+
+				if (type === 'LETTER') {
+					points += letterTile.getPoints() * factor;
+				} else if (type === 'WORD') {
+					wordMultiplier *= factor;
 					points += letterTile.getPoints();
 				}
 			} else {
 				points += letterTile.getPoints();
 			}
-		}
+		});
 
 		return points * wordMultiplier;
 	}
@@ -152,6 +141,21 @@ class Board {
 		} else {
 			return true;
 		}
+	}
+
+	private getTileSequence(
+		start: BoardPosition,
+		end: BoardPosition
+	): (BoardTile | null)[] {
+		const direction = BoardPosition.calculateDirection([start, end]);
+
+		let tile = start.clone();
+		const tileSequence: (BoardTile | null)[] = [this.getTile(tile)];
+		while (!tile.equals(end)){
+			tile = tile.lower(direction, -1);
+			tileSequence.push(this.getTile(tile));
+		}
+		return tileSequence;
 	}
 }
 

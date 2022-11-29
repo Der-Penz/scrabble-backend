@@ -32,8 +32,12 @@ class MultiplierBoardTile extends BoardTile {
 	useMultiplier(): {
 		factor: number;
 		type: MultiplierType;
-	} | null {
-		if (this.isAlreadyUsed()) return null;
+	} {
+		if (this.isAlreadyUsed())
+			return {
+				factor: 1,
+				type: this.type,
+			};
 
 		this.used = true;
 		return {

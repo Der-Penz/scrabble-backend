@@ -1,3 +1,3 @@
-type WordDirection = 'Horizontal' | 'Vertical' | 'IllegalPlacement';
+type WordDirection = 'Horizontal' | 'Vertical';
 
 export default WordDirection;

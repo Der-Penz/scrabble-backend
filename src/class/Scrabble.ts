@@ -46,7 +46,6 @@ class Scrabble {
 				new Bench(player, this.bag.drawMany(Bench.BASE_MAX_TILES))
 			)
 		);
-
 	}
 
 	getBag() {
@@ -107,10 +106,9 @@ class Scrabble {
 			(this.currentPlayerIndex + 1) % this.benches.size;
 
 		const bench = this.currentBench();
-		const playerName = this.currentPlayerName();
 
 		while (!bench.isFull()) {
-			if (this.bag.getCount() === 0) {
+			if (this.bag.getCount() <= 0) {
 				break;
 			}
 			bench.addTile(this.bag.drawOne());
@@ -118,10 +116,10 @@ class Scrabble {
 
 		this.room.sendMessage(
 			new WSMessage('game:next', {
-				benchOwner: playerName,
+				benchOwner: bench.getOwner(),
 				bench: bench,
 			}),
-			playerName
+			this.currentPlayerName()
 		);
 
 		this.broadcastGameState();
@@ -156,66 +154,29 @@ class Scrabble {
 		);
 	}
 
-	private getWordDirection(
-		positionedTiles: PositionedLetterTile[]
-	): WordDirection {
-		const baseX = positionedTiles[0].x;
-		const baseY = positionedTiles[0].y;
-
-		const allXSame = positionedTiles.every(
-			(posTiled) => posTiled.x === baseX
-		);
-		const allYSame = positionedTiles.every(
-			(posTiled) => posTiled.y === baseY
-		);
-
-		if (allXSame && !allYSame) {
-			return 'Vertical';
-		} else if (!allXSame && allYSame) {
-			return 'Horizontal';
-		} else if (!allXSame && !allYSame) {
-			return 'IllegalPlacement';
-		} else {
-			//if it a one letter placement just use vertical
-			return 'Horizontal';
-		}
-	}
-
 	private getLowerTile(
 		position: BoardPosition,
 		direction: WordDirection
 	): BoardPosition {
-		const key = direction === 'Horizontal' ? 'x' : 'y';
+		const key = Board.DIRECTION_KEY[direction];
 
 		if (
-			position[key] < 0 ||
-			!this.board.isTileTaken(position.x, position.y)
+			!BoardPosition.isValid(position) ||
+			!this.board.isTileTaken(position)
 		) {
 			return null;
 		}
 
-		if (direction === 'Horizontal') {
-			return (
-				this.getLowerTile(
-					new BoardPosition(position.x - 1, position.y),
-					direction
-				) || position
-			);
-		} else {
-			return (
-				this.getLowerTile(
-					new BoardPosition(position.x, position.y - 1),
-					direction
-				) || position
-			);
-		}
+		return (
+			this.getLowerTile(position.lower(direction), direction) || position
+		);
 	}
 
 	private sortPositions(
 		positionedTiles: PositionedLetterTile[],
 		direction: WordDirection
 	) {
-		const key = direction === 'Horizontal' ? 'x' : 'y';
+		const key = Board.DIRECTION_KEY[direction];
 
 		positionedTiles.sort((a, b) => a[key] - b[key]);
 
@@ -244,10 +205,7 @@ class Scrabble {
 		let endPos = startPos;
 
 		while (currentPosition !== null) {
-			const tile = this.board.getTile(
-				currentPosition.x,
-				currentPosition.y
-			);
+			const tile = this.board.getTile(currentPosition);
 
 			if (tile === null || !tile.isTaken()) {
 				if (position.equals(currentPosition)) {
@@ -314,9 +272,10 @@ class Scrabble {
 	}
 
 	placeWord(positionedTiles: PositionedLetterTile[]) {
-		const direction = this.getWordDirection(positionedTiles);
-
-		if (direction === 'IllegalPlacement') {
+		let direction: WordDirection = 'Horizontal';
+		try {
+			direction = BoardPosition.calculateDirection(positionedTiles);
+		} catch (err) {
 			return new JsonErrorResponse(
 				'IllegalPlacement',
 				'Tiles must be placed in the same row or column to form one word'
@@ -347,7 +306,7 @@ class Scrabble {
 		}> = [];
 		let nextToAlreadyPlacedTile = false;
 		const wordTiles: PositionedLetterTile[] = [];
-		
+
 		//read the full word and check for errors
 		let currentPosition = startPos;
 		let endPos = startPos;
@@ -360,12 +319,7 @@ class Scrabble {
 			if (index >= 0) {
 				const tileToBePlaced = positionedTiles.splice(index, 1)[0];
 
-				if (
-					!this.board.positionInBounds(
-						tileToBePlaced.x,
-						tileToBePlaced.y
-					)
-				) {
+				if (!this.board.positionInBounds(tileToBePlaced)) {
 					return new JsonErrorResponse(
 						'OutOfBoard',
 						'Tile index is out of the boards bounds',
@@ -379,9 +333,7 @@ class Scrabble {
 				}
 
 				//not already taken
-				if (
-					this.board.isTileTaken(tileToBePlaced.x, tileToBePlaced.y)
-				) {
+				if (this.board.isTileTaken(tileToBePlaced)) {
 					return new JsonErrorResponse(
 						'BoardPlaceTaken',
 						'On the selected indices are already a tiles',
@@ -390,7 +342,7 @@ class Scrabble {
 							y: tileToBePlaced.y,
 							tile: tileToBePlaced.tile.getChar(),
 							placedTile: this.board
-								.getTile(tileToBePlaced.x, tileToBePlaced.y)
+								.getTile(tileToBePlaced)
 								.getTile()
 								.getChar(),
 						}
@@ -416,10 +368,7 @@ class Scrabble {
 			}
 			//if you relate to a already placed tile
 			else {
-				const tile = this.board.getTile(
-					currentPosition.x,
-					currentPosition.y
-				);
+				const tile = this.board.getTile(currentPosition);
 
 				if (tile === null || !tile.isTaken()) {
 					//end of word or gap
@@ -468,7 +417,7 @@ class Scrabble {
 			);
 		}
 
-		const key = direction === 'Horizontal' ? 'x' : 'y';
+		const key = Board.DIRECTION_KEY[direction];
 		if (
 			this.board.isEmpty() &&
 			!(endPos[key] >= Board.CENTER && startPos[key] <= Board.CENTER)
