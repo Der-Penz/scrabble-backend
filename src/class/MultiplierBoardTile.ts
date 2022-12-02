@@ -29,17 +29,25 @@ class MultiplierBoardTile extends BoardTile {
 		return new MultiplierBoardTile(x, y, 3, 'LETTER');
 	}
 
-	useMultiplier(): {
+	getMultiplier(): {
 		factor: number;
 		type: MultiplierType;
-	} | null {
-		if (this.isAlreadyUsed()) return null;
+	} {
+		if (this.isAlreadyUsed())
+			return {
+				factor: 1,
+				type: this.type,
+			};
 
-		this.used = true;
+		
 		return {
 			factor: this.factor,
 			type: this.type,
 		};
+	}
+
+	useMultiplier() {
+		this.used = true;
 	}
 
 	isAlreadyUsed(): boolean {
