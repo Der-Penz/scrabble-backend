@@ -30,6 +30,7 @@ class Board {
 		Vertical: 'y',
 	};
 	private board: BoardTile[][];
+	private activeMultipliersToConsume: BoardPosition[] = [];
 
 	constructor(boardMap: string[] = Board.DEFAULT_MAP) {
 		this.board = new Array(Board.SIZE);
@@ -94,7 +95,8 @@ class Board {
 
 		return sequence.reduce(
 			(word, boardTile) =>
-				(word += boardTile === null ? '' : boardTile.getTile()),
+				(word +=
+					boardTile === null ? '' : boardTile.getTile().getChar()),
 			''
 		);
 	}
@@ -116,7 +118,10 @@ class Board {
 
 			const letterTile = boardTile.getTile();
 			if (boardTile instanceof MultiplierBoardTile) {
-				const { type, factor } = boardTile.useMultiplier();
+				const { type, factor } = boardTile.getMultiplier();
+				this.activeMultipliersToConsume.push(
+					new BoardPosition(boardTile.x, boardTile.y)
+				);
 
 				if (type === 'LETTER') {
 					points += letterTile.getPoints() * factor;
@@ -130,6 +135,16 @@ class Board {
 		});
 
 		return points * wordMultiplier;
+	}
+
+	useActiveMultipliers() {
+		this.activeMultipliersToConsume.forEach((position) => {
+			const tile = this.getTile(position);
+			if (tile && tile instanceof MultiplierBoardTile) {
+				tile.useMultiplier();
+			}
+		});
+		this.activeMultipliersToConsume = [];
 	}
 
 	private isWordHorizontal(
@@ -151,7 +166,7 @@ class Board {
 
 		let tile = start.clone();
 		const tileSequence: (BoardTile | null)[] = [this.getTile(tile)];
-		while (!tile.equals(end)){
+		while (!tile.equals(end)) {
 			tile = tile.lower(direction, -1);
 			tileSequence.push(this.getTile(tile));
 		}

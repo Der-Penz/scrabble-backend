@@ -96,7 +96,8 @@ class Scrabble {
 		this.endGame(who);
 	}
 
-	private nextPlayer() {
+	private nextPlayer(currentMove: Move) {
+		this.moveHistory.push(currentMove);
 		if (this.objective.checkForGameEnd(this)) {
 			this.endGame();
 			return;
@@ -158,8 +159,6 @@ class Scrabble {
 		position: BoardPosition,
 		direction: WordDirection
 	): BoardPosition {
-		const key = Board.DIRECTION_KEY[direction];
-
 		if (
 			!BoardPosition.isValid(position) ||
 			!this.board.isTileTaken(position)
@@ -193,12 +192,8 @@ class Scrabble {
 		direction: WordDirection
 	) {
 		const startPos =
-			this.getLowerTile(
-				direction === 'Horizontal'
-					? new BoardPosition(position.x - 1, position.y)
-					: new BoardPosition(position.x, position.y - 1),
-				direction
-			) || position;
+			this.getLowerTile(position.lower(direction), direction) ||
+			position.clone();
 
 		let word = '';
 		let currentPosition = startPos;
@@ -221,16 +216,10 @@ class Scrabble {
 			endPos = currentPosition;
 
 			//go one higher
-			if (direction === 'Horizontal') {
-				currentPosition = new BoardPosition(
-					currentPosition.x + 1,
-					currentPosition.y
-				);
-			} else {
-				currentPosition = new BoardPosition(
-					currentPosition.x,
-					currentPosition.y + 1
-				);
+			currentPosition = currentPosition.lower(direction, -1);
+
+			if (!BoardPosition.isValid(currentPosition)) {
+				currentPosition = null;
 			}
 		}
 
@@ -239,14 +228,14 @@ class Scrabble {
 		}
 
 		if (!Dictionary.instance.isWordValid(word)) {
-			return new JsonErrorResponse(
+			throw new JsonErrorResponse(
 				'InvalidWord',
 				'Word is not a official allowed Scrabble word',
-				{ word: word }
+				{ word, start: startPos, end: endPos }
 			);
 		}
 
-		return { startPos, endPos };
+		return { startPos, endPos, word };
 	}
 
 	trade(which: Char[] = []) {
@@ -264,11 +253,8 @@ class Scrabble {
 
 		newTiles.forEach((tile) => currentBench.addTile(tile));
 
-		this.moveHistory.push(
-			new TradeMove(this.currentPlayerName(), toTrade, newTiles)
-		);
-
-		this.nextPlayer();
+		const move = new TradeMove(this.currentPlayerName(), toTrade, newTiles);
+		this.nextPlayer(move);
 	}
 
 	placeWord(positionedTiles: PositionedLetterTile[]) {
@@ -286,26 +272,13 @@ class Scrabble {
 
 		//get beginning of word
 		const startPos =
-			this.getLowerTile(
-				direction === 'Horizontal'
-					? new BoardPosition(
-							positionedTiles[0].x - 1,
-							positionedTiles[0].y
-					  )
-					: new BoardPosition(
-							positionedTiles[0].x,
-							positionedTiles[0].y - 1
-					  ),
-				direction
-			) || new BoardPosition(positionedTiles[0].x, positionedTiles[0].y);
+			this.getLowerTile(positionedTiles[0].lower(direction), direction) ||
+			positionedTiles[0].clone();
 
 		let word = '';
-		let positionsToCalculatePointsLater: Array<{
-			startPos: BoardPosition;
-			endPos: BoardPosition;
-		}> = [];
+		let adjacentWords: ReturnType<typeof this.calculateAdjacentWord>[] = [];
 		let nextToAlreadyPlacedTile = false;
-		const wordTiles: PositionedLetterTile[] = [];
+		const tilesToPlaceOnBoard: PositionedLetterTile[] = [];
 
 		//read the full word and check for errors
 		let currentPosition = startPos;
@@ -315,11 +288,11 @@ class Scrabble {
 				tile.equals(currentPosition)
 			);
 
-			//if you want to place the tile
+			//if the tile is in the tiles the player send the position must be null to place it
 			if (index >= 0) {
 				const tileToBePlaced = positionedTiles.splice(index, 1)[0];
 
-				if (!this.board.positionInBounds(tileToBePlaced)) {
+				if (!BoardPosition.isValid(tileToBePlaced)) {
 					return new JsonErrorResponse(
 						'OutOfBoard',
 						'Tile index is out of the boards bounds',
@@ -332,11 +305,11 @@ class Scrabble {
 					);
 				}
 
-				//not already taken
+				//is the tile already taken
 				if (this.board.isTileTaken(tileToBePlaced)) {
 					return new JsonErrorResponse(
 						'BoardPlaceTaken',
-						'On the selected indices are already a tiles',
+						'On the selected indices are already placed tiles',
 						{
 							x: tileToBePlaced.x,
 							y: tileToBePlaced.y,
@@ -349,24 +322,25 @@ class Scrabble {
 					);
 				}
 
-				const adjacentError = this.calculateAdjacentWord(
-					tileToBePlaced,
-					direction === 'Horizontal' ? 'Vertical' : 'Horizontal'
-				);
+				//calculate adjacent words in a 90 degrees rotated direction
+				try {
+					const adjacentWord = this.calculateAdjacentWord(
+						tileToBePlaced,
+						direction === 'Horizontal' ? 'Vertical' : 'Horizontal'
+					);
 
-				if (adjacentError instanceof JsonErrorResponse) {
-					return adjacentError;
-				}
-
-				if (adjacentError !== null) {
-					positionsToCalculatePointsLater.push(adjacentError);
+					if (adjacentWord !== null) {
+						adjacentWords.push(adjacentWord);
+					}
+				} catch (jsonErrorResponse) {
+					return jsonErrorResponse;
 				}
 
 				word += tileToBePlaced.tile.getChar();
-				wordTiles.push(tileToBePlaced);
 				endPos = currentPosition;
+				tilesToPlaceOnBoard.push(tileToBePlaced);
 			}
-			//if you relate to a already placed tile
+			//if you include a already placed tile in your word
 			else {
 				const tile = this.board.getTile(currentPosition);
 
@@ -393,27 +367,17 @@ class Scrabble {
 			}
 
 			//go one higher
-			if (direction === 'Horizontal') {
-				currentPosition = new BoardPosition(
-					currentPosition.x + 1,
-					currentPosition.y
-				);
-			} else {
-				currentPosition = new BoardPosition(
-					currentPosition.x,
-					currentPosition.y + 1
-				);
-			}
+			currentPosition = currentPosition.lower(direction, -1);
 		}
 
 		if (
 			!Dictionary.instance.isWordValid(word) &&
-			positionsToCalculatePointsLater.length === 0
+			adjacentWords.length === 0
 		) {
 			return new JsonErrorResponse(
 				'InvalidWord',
 				'Word is not a official allowed Scrabble word',
-				{ word: word }
+				{ word: word, start: startPos, end: endPos }
 			);
 		}
 
@@ -425,14 +389,14 @@ class Scrabble {
 			return new JsonErrorResponse(
 				'NotCentered',
 				'First word needs to go through the center position',
-				{ x: Board.CENTER, y: Board.CENTER }
+				{ centerX: Board.CENTER, centerY: Board.CENTER }
 			);
 		}
 
 		if (
 			!nextToAlreadyPlacedTile &&
 			!this.board.isEmpty() &&
-			positionsToCalculatePointsLater.length === 0
+			adjacentWords.length === 0
 		) {
 			return new JsonErrorResponse(
 				'NotConnected',
@@ -444,59 +408,64 @@ class Scrabble {
 		//remove tiles from players bench
 		if (
 			!this.currentBench().hasTiles(
-				wordTiles.map((wordTile) => wordTile.tile.getChar())
+				tilesToPlaceOnBoard.map((wordTile) => wordTile.tile.getChar())
 			)
 		) {
 			return new JsonErrorResponse(
 				'TileNotOnHand',
 				'Tile or Tiles are missing in your bench to create the word',
-				{ bench: this.currentBench().getBench() }
+				{
+					bench: this.currentBench().getBench(),
+					tilesTriedToPlace: tilesToPlaceOnBoard,
+				}
 			);
 		}
 
 		const currentMove = new PlaceMove(this.currentPlayerName());
 
-		wordTiles.forEach((positionedTile) =>
+		tilesToPlaceOnBoard.forEach((positionedTile) =>
 			this.currentBench().useTile(positionedTile.tile.getChar())
 		);
 
 		//place tiles on the board
-		this.board.placeWord(wordTiles);
+		this.board.placeWord(tilesToPlaceOnBoard);
 		this.room.log(`placing word ${word}`, false);
 
 		//add the points to the player
 		const points = this.board.calculatePoints(startPos, endPos);
 		this.currentBench().addPoints(points);
 
-		currentMove.addWord({
-			end: endPos,
-			start: startPos,
-			points: points,
-			word: word,
-		});
+		if (word.length > 1) {
+			currentMove.addWord({
+				end: endPos,
+				start: startPos,
+				points: points,
+				word: word,
+			});
+		}
 
-		positionsToCalculatePointsLater.forEach((word) => {
+		adjacentWords.forEach((aW) => {
 			const points = this.board.calculatePoints(
-				word.startPos,
-				word.endPos
+				aW.startPos,
+				aW.endPos
 			);
 			this.currentBench().addPoints(points);
 
 			currentMove.addWord({
 				points: points,
-				word: this.board.getWord(word.startPos, word.endPos),
-				start: word.startPos,
-				end: word.endPos,
+				word: aW.word,
+				start: aW.startPos,
+				end: aW.endPos,
 			});
 		});
 
-		this.moveHistory.push(currentMove);
-		this.nextPlayer();
+		this.board.useActiveMultipliers()
+		this.nextPlayer(currentMove);
 	}
 
 	skip() {
-		this.moveHistory.push(new SkipMove(this.currentPlayerName()));
-		this.nextPlayer();
+		const move = new SkipMove(this.currentPlayerName());
+		this.nextPlayer(move);
 	}
 }
 

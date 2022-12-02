@@ -14,7 +14,7 @@ export class BoardPosition {
 		return this.x === other.x && this.y === other.y;
 	}
 
-	clone(){
+	clone() {
 		return new BoardPosition(this.x, this.y);
 	}
 
@@ -53,8 +53,13 @@ export class BoardPosition {
 		else return 'Horizontal';
 	}
 
-	static isValid(position : BoardPosition){
-		return position.x >= 0 && position.y >= 0 && position.x <= Board.SIZE && position.y <= Board.SIZE;
+	static isValid(position: BoardPosition) {
+		return (
+			position.x >= 0 &&
+			position.y >= 0 &&
+			position.x < Board.SIZE &&
+			position.y < Board.SIZE
+		);
 	}
 }
 
