@@ -2,6 +2,8 @@ import express from 'express';
 import wsExpress from 'express-ws';
 import BaseObjective from '../../class/BaseObjective';
 import { getLetterTile } from '../../class/Helpers';
+import JsonErrorResponse from '../../class/JsonErrorResponse';
+import JsonResponse from '../../class/JsonResponse';
 import PointObjective from '../../class/PointObjective';
 import PositionedLetterTile from '../../class/PositionedLetterTile';
 import SeparatedTimeObjective from '../../class/SeparatedTimeObjective';
@@ -123,6 +125,33 @@ wsServer.ws('/:roomID', function (ws, req) {
 			}
 		}
 
+		if(message.getAction() === 'game:move:ghost'){
+			try {
+				const positionedTiles = message
+					.getContent()
+					.map(
+						(positionedTile) =>
+							new PositionedLetterTile(
+								positionedTile.x,
+								positionedTile.y,
+								getLetterTile(
+									positionedTile.char.toUpperCase() as Char
+								)
+							)
+					) as PositionedLetterTile[];
+				const response = roomToJoin
+					.getGame()
+					.placeWord(positionedTiles, true);
+
+				roomToJoin.sendMessage(
+					new WSMessage('game:move:ghost', response.json()),
+					name
+				);
+			} catch (err) {
+				console.error(err);
+			}
+		}
+
 		if (message.getAction() === 'game:move:place') {
 			try {
 				const positionedTiles = message
@@ -139,13 +168,8 @@ wsServer.ws('/:roomID', function (ws, req) {
 					) as PositionedLetterTile[];
 				const response = roomToJoin
 					.getGame()
-					.placeWord(positionedTiles);
+					.placeWord(positionedTiles, false);
 
-				if (!response) {
-					return;
-				}
-
-				roomToJoin.log(response.string(), false);
 				roomToJoin.sendMessage(
 					new WSMessage('game:move:place', response.json()),
 					name

@@ -105,7 +105,7 @@ class Board {
 		return BoardPosition.isValid(position);
 	}
 
-	calculatePoints(start: BoardPosition, end: BoardPosition): number {
+	calculatePoints(start: BoardPosition, end: BoardPosition, additionalPlacedLetterTiles: PositionedLetterTile[] = []): number {
 		let points = 0;
 		let wordMultiplier = 1;
 
@@ -116,7 +116,18 @@ class Board {
 				return;
 			}
 
-			const letterTile = boardTile.getTile();
+			let letterTile = boardTile.getTile();
+			
+			if(letterTile === null){
+				const position = new BoardPosition(boardTile.x, boardTile.y);
+				const tile = additionalPlacedLetterTiles.find(pos => position.equals(pos))
+				if(tile){
+					letterTile =  tile.tile;
+				}else{
+					return;
+				}
+			}
+
 			if (boardTile instanceof MultiplierBoardTile) {
 				const { type, factor } = boardTile.getMultiplier();
 				this.activeMultipliersToConsume.push(

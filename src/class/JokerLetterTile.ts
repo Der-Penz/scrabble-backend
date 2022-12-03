@@ -8,9 +8,9 @@ class JokerLetterTile extends LetterTile {
 
 	convertToTile(which: Char): LetterTile {
 		if (which === '0') {
-			return new LetterTile('A');
+			return new LetterTile('A', 0);
 		}
-		return new LetterTile(which);
+		return new LetterTile(which, 0);
 	}
 }
 
