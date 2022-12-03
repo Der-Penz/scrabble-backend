@@ -262,7 +262,6 @@ class Scrabble {
 		positionedTiles: PositionedLetterTile[],
 		ghostPlace: boolean
 	): JsonResponse | JsonErrorResponse {
-    
 		let direction: WordDirection = 'Horizontal';
 		try {
 			direction = BoardPosition.calculateDirection(positionedTiles);
@@ -427,7 +426,6 @@ class Scrabble {
 		}
 
 		if (ghostPlace) {
-			this.board.calculatePoints(startPos, endPos, tilesToPlaceOnBoard);
 			return new JsonResponse({
 				adjacentWords: adjacentWords.map((adjacentWord) => ({
 					...adjacentWord,
@@ -454,7 +452,7 @@ class Scrabble {
 		}
 
 		const currentMove = new PlaceMove(this.currentPlayerName());
-      
+
 		tilesToPlaceOnBoard.forEach(
 			(positionedTile) =>
 				(positionedTile.tile = this.currentBench().useTile(
@@ -471,7 +469,6 @@ class Scrabble {
 			const points = this.board.calculatePoints(startPos, endPos);
 			this.currentBench().addPoints(points);
 
-		if (word.length > 1) {
 			currentMove.addWord({
 				end: endPos,
 				start: startPos,
@@ -481,10 +478,7 @@ class Scrabble {
 		}
 
 		adjacentWords.forEach((aW) => {
-			const points = this.board.calculatePoints(
-				aW.startPos,
-				aW.endPos
-			);
+			const points = this.board.calculatePoints(aW.startPos, aW.endPos);
 			this.currentBench().addPoints(points);
 
 			currentMove.addWord({
