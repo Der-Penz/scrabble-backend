@@ -11,6 +11,7 @@ type WSAction =
 	| 'game:move:trade'
 	| 'game:move:skip'
 	| 'game:move:place'
+	| 'game:move:ghost'
 	| 'game:move:forfeit';
 
 export default WSAction;

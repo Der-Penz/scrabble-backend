@@ -8,6 +8,7 @@ import BoardPosition from './BoardPosition';
 import Dictionary from './Dictionary';
 import ForfeitMove from './ForfeitMove';
 import JsonErrorResponse from './JsonErrorResponse';
+import JsonResponse from './JsonResponse';
 import Move from './Move';
 import PlaceMove from './PlaceMove';
 import PositionedLetterTile from './PositionedLetterTile';
@@ -257,7 +258,10 @@ class Scrabble {
 		this.nextPlayer(move);
 	}
 
-	placeWord(positionedTiles: PositionedLetterTile[]) {
+	placeWord(
+		positionedTiles: PositionedLetterTile[],
+		ghostPlace: boolean
+	): JsonResponse | JsonErrorResponse {
 		let direction: WordDirection = 'Horizontal';
 		try {
 			direction = BoardPosition.calculateDirection(positionedTiles);
@@ -421,21 +425,51 @@ class Scrabble {
 			);
 		}
 
+		if (ghostPlace) {
+			this.board.calculatePoints(startPos, endPos, tilesToPlaceOnBoard);
+			return new JsonResponse({
+				adjacentWords: adjacentWords.map((adjacentWord) => ({
+					...adjacentWord,
+					points: this.board.calculatePoints(
+						adjacentWord.startPos,
+						adjacentWord.endPos,
+						tilesToPlaceOnBoard
+					),
+				})),
+				mainWord:
+					word.length > 1
+						? {
+								startPos: startPos,
+								endPos: endPos,
+								word: word,
+								points: this.board.calculatePoints(
+									startPos,
+									endPos,
+									tilesToPlaceOnBoard
+								),
+						  }
+						: {},
+			});
+		}
+
 		const currentMove = new PlaceMove(this.currentPlayerName());
 
-		tilesToPlaceOnBoard.forEach((positionedTile) =>
-			this.currentBench().useTile(positionedTile.tile.getChar())
+		tilesToPlaceOnBoard.forEach(
+			(positionedTile) =>
+				(positionedTile.tile = this.currentBench().useTile(
+					positionedTile.tile.getChar()
+				))
 		);
 
 		//place tiles on the board
 		this.board.placeWord(tilesToPlaceOnBoard);
 		this.room.log(`placing word ${word}`, false);
 
-		//add the points to the player
-		const points = this.board.calculatePoints(startPos, endPos);
-		this.currentBench().addPoints(points);
-
 		if (word.length > 1) {
+			//add the points to the player
+			const points = this.board.calculatePoints(startPos, endPos);
+			this.currentBench().addPoints(points);
+
 			currentMove.addWord({
 				end: endPos,
 				start: startPos,
@@ -445,10 +479,7 @@ class Scrabble {
 		}
 
 		adjacentWords.forEach((aW) => {
-			const points = this.board.calculatePoints(
-				aW.startPos,
-				aW.endPos
-			);
+			const points = this.board.calculatePoints(aW.startPos, aW.endPos);
 			this.currentBench().addPoints(points);
 
 			currentMove.addWord({
@@ -459,8 +490,10 @@ class Scrabble {
 			});
 		});
 
-		this.board.useActiveMultipliers()
+		this.board.useActiveMultipliers();
 		this.nextPlayer(currentMove);
+
+		return new JsonResponse({});
 	}
 
 	skip() {
