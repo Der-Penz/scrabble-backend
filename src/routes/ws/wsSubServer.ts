@@ -135,7 +135,7 @@ wsServer.ws('/:roomID', function (ws, req) {
 								positionedTile.x,
 								positionedTile.y,
 								getLetterTile(
-									positionedTile.char.toUpperCase() as Char
+									(positionedTile.char as string).at(0).toUpperCase() as Char
 								)
 							)
 					) as PositionedLetterTile[];

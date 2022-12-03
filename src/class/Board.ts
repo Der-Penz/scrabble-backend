@@ -24,7 +24,7 @@ class Board {
 		'311411131114113',
 	];
 	static readonly SIZE = 15;
-	static readonly CENTER = (Board.SIZE + 1) / 2;
+	static readonly CENTER = Math.floor((Board.SIZE) / 2);
 	static readonly DIRECTION_KEY: Record<WordDirection, 'x' | 'y'> = {
 		Horizontal: 'x',
 		Vertical: 'y',
