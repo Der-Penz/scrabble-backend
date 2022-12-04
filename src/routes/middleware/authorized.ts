@@ -1,11 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
-const SESSION_IDS = {
-	'1': 'mike',
-	'2': 'devin',
-};
-
 function authorizedRoute(req: Request, res: Response, next: NextFunction) {
 	const authorization = req.headers.authorization;
 
