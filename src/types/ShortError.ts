@@ -1,6 +1,6 @@
 type ShortError =
 	| 'ClientError'
-	| 'Server Error'
+	| 'ServerError'
 	| 'Unauthorized'
 	| 'GameRunning'
 	| 'RoomNotExisting'

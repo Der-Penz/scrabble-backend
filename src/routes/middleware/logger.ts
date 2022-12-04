@@ -1,13 +1,12 @@
 import { log } from 'console';
-import express from 'express';
-const logRouter = express.Router();
+import { NextFunction, Request, Response } from 'express';
 
-logRouter.all('/', (req, res, next) => {
+function logRoute(req: Request, res: Response, next: NextFunction) {
 	log('#'.repeat(10), req.method.toUpperCase(), '#'.repeat(10));
 	log('Timestamp:', new Date(Date.now()).toTimeString())
-	log('Route:', req.baseUrl);
-    log()
+	log('Route:', req.url);
+    log(req.isAuth, req.user)
     next();
-});
+}
 
-export default logRouter;
+export default logRoute;
