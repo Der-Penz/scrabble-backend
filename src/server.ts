@@ -15,7 +15,7 @@ import dictionaryRouter from './routes/api/dictionaryRouter';
 import authorizedRoute from './routes/middleware/authorized';
 import authenticationRouter from './routes/api/authentication';
 import mongoose from 'mongoose';
-import User from './Schema/User';
+import MUser from './Schema/User';
 
 const API_BASE = '/api/v1';
 export const { app } = wsExpress(express());

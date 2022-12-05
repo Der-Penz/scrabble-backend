@@ -3,6 +3,7 @@ import express, { Request } from 'express';
 import jwt, { JsonWebTokenError, JwtPayload } from 'jsonwebtoken';
 import JsonErrorResponse from '../../class/JsonErrorResponse';
 import JsonResponse from '../../class/JsonResponse';
+import MUser from '../../Schema/User';
 import { User } from '../../types/User';
 
 const authenticationRouter = express.Router();
@@ -23,10 +24,7 @@ authenticationRouter.post(
 					).json()
 				);
 		}
-		const user = {
-			name: body.name,
-			uuid: '1',
-		};
+		const user = {} as User;
 		try {
 			const token = generateAccessToken(user);
 
@@ -85,10 +83,7 @@ authenticationRouter.post(
 				process.env.REFRESH_TOKEN_SECRET
 			) as JwtPayload & User;
 
-			const accessToken = generateAccessToken({
-				uuid: user.uuid,
-				name: user.name,
-			});
+			const accessToken = generateAccessToken(user);
 			res.json({ token: accessToken });
 		} catch (err) {
 			return res
@@ -126,9 +121,70 @@ authenticationRouter.delete(
 	}
 );
 
-authenticationRouter.post('/register', (req, res) => {
-	res.sendStatus(200);
-});
+authenticationRouter.post(
+	'/register',
+	async (
+		req: Request<
+			any,
+			any,
+			{
+				name: string;
+				email: string;
+				password: string;
+			}
+		>,
+		res
+	) => {
+		const emailRegex =
+			/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		const body = req.body;
+
+		if (!(body.name && body.email && body.password)) {
+			return res
+				.status(400)
+				.send(
+					new JsonErrorResponse(
+						'ClientError',
+						'Please provide a username password and email'
+					).json()
+				);
+		}
+
+		if (!emailRegex.test(body.email)) {
+			return res
+				.status(400)
+				.send(
+					new JsonErrorResponse(
+						'ClientError',
+						'invalid email provided'
+					).json()
+				);
+		}
+
+		const user = await MUser.findOne()
+			.or([{ name: body.name }, { email: body.email }])
+			.exec();
+
+		if (user) {
+			return res
+				.status(400)
+				.send(
+					new JsonErrorResponse(
+						'ClientError',
+						'Username or email already taken'
+					).json()
+				);
+		}
+
+		await MUser.create({
+			email: body.email,
+			name: body.name,
+			password: body.password,
+		});
+
+		res.sendStatus(201).send(new JsonResponse({ created: true }).json());
+	}
+);
 
 function generateAccessToken(
 	user: User,
