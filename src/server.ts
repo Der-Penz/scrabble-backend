@@ -14,6 +14,8 @@ import Room from './class/Room';
 import dictionaryRouter from './routes/api/dictionaryRouter';
 import authorizedRoute from './routes/middleware/authorized';
 import authenticationRouter from './routes/api/authentication';
+import mongoose from 'mongoose';
+import User from './Schema/User';
 
 const API_BASE = '/api/v1';
 export const { app } = wsExpress(express());
@@ -34,11 +36,20 @@ app.all('/*', (_, res) => {
 	res.sendStatus(404);
 });
 
-app.listen(process.env.PORT, () =>
-	log('->Running server on ', process.env.PORT)
-);
+(async () => {
+	try {
+		await mongoose.connect(process.env.URL_DB);
+		console.log(' ______ ______ ______ ______ ');
+		console.log('|                           |');
+		console.log('|          Scrabble         |');
+		console.log('|______ ______ ______ ______|\n');
+		console.log('-> Connection to DB established');
 
-//Debugging
-const room = new Room('debugging', 'PUBLIC');
-log(room.getUUID(true));
-GameHandler.instance.addRoom(room);
+		app.listen(process.env.PORT, () => {
+			console.log('-> Running server on ', process.env.PORT, '\n');
+			console.log(' ______ ______ ______ ______\n');
+		});
+	} catch (err) {
+		console.log(err);
+	}
+})();
