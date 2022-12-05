@@ -30,6 +30,7 @@
     "express-ws": "^5.0.2",
     "fs.promises": "^0.1.2",
     "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.7.5",
     "node-fetch": "^2.6.7",
     "uuid": "^9.0.0",
     "ws": "^8.11.0"
