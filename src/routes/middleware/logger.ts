@@ -5,7 +5,7 @@ function logRoute(req: Request, res: Response, next: NextFunction) {
 	log('#'.repeat(10), req.method.toUpperCase(), '#'.repeat(10));
 	log('Timestamp:', new Date(Date.now()).toTimeString())
 	log('Route:', req.url);
-    log(req.isAuth, req.user)
+	req.isAuth && log('Authorized:', req.user.name)
     next();
 }
 

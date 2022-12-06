@@ -1,6 +1,6 @@
-import { throws } from 'assert';
 import express, { Request } from 'express';
-import jwt, { JsonWebTokenError, JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import JsonErrorResponse from '../../class/JsonErrorResponse';
 import JsonResponse from '../../class/JsonResponse';
 import MUser from '../../Schema/User';
@@ -11,7 +11,7 @@ const refreshTokens: string[] = [];
 
 authenticationRouter.post(
 	'/login',
-	(req: Request<any, any, { password: string; name: string }>, res) => {
+	async (req: Request<any, any, { password: string; name: string }>, res) => {
 		const body = req.body;
 
 		if (!(body.name && body.password)) {
@@ -24,7 +24,23 @@ authenticationRouter.post(
 					).json()
 				);
 		}
-		const user = {} as User;
+
+		const user = await MUser.findOne()
+			.or([{ name: body.name }, { email: body.name }])
+			.lean();
+
+		const equal = await bcrypt.compare(body.password, user.password);
+		if (!(user && equal)) {
+			return res
+				.status(400)
+				.send(
+					new JsonErrorResponse(
+						'ClientError',
+						'invalid password or email/name'
+					).json()
+				);
+		}
+
 		try {
 			const token = generateAccessToken(user);
 
@@ -38,6 +54,8 @@ authenticationRouter.post(
 				.status(201)
 				.send(new JsonResponse({ token, refreshToken }));
 		} catch (err) {
+			console.log(err);
+
 			return res
 				.status(500)
 				.send(
@@ -176,13 +194,14 @@ authenticationRouter.post(
 				);
 		}
 
+		const hash = await bcrypt.hash(body.password, 10);
 		await MUser.create({
 			email: body.email,
 			name: body.name,
-			password: body.password,
+			password: hash,
 		});
 
-		res.sendStatus(201).send(new JsonResponse({ created: true }).json());
+		res.status(201).send(new JsonResponse({ created: true }).json());
 	}
 );
 

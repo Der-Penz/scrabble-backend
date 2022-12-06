@@ -1,5 +1,5 @@
-import mongoose, { Schema } from 'mongoose';
-import { User as MUser } from '../types/User';
+import mongoose, { Model, Schema } from 'mongoose';
+import { User as MUser, User } from '../types/User';
 
 const userSchema = new Schema<MUser>({
 	name: { type: String, required: true },
@@ -12,6 +12,6 @@ const userSchema = new Schema<MUser>({
 	lastOnline: { type: Date, default: Date.now() },
 });
 
-const MUser = mongoose.model('user', userSchema);
+const MUser: Model<User> = mongoose.model('user', userSchema);
 
 export default MUser;

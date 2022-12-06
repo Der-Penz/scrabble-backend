@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { User } from '../../types/User';
 
 function authorizedRoute(req: Request, res: Response, next: NextFunction) {
 	const authorization = req.headers.authorization;
@@ -13,7 +14,7 @@ function authorizedRoute(req: Request, res: Response, next: NextFunction) {
 	try {
 		const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-		req.user = (user as JwtPayload).name;
+		req.user = (user as User);
 		req.isAuth = true;
 	} catch (err) {
 		console.log(err);

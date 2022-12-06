@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 
 export interface User {
-	_id: Types.ObjectId;
+	_id: Types.ObjectId | string;
 	name: string;
 	email: string;
 	password: string;
@@ -10,4 +10,5 @@ export interface User {
 	lastOnline: Date;
 	bestScore: number;
 	bestWord: string;
+	__v: number;
 }
