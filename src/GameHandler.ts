@@ -13,8 +13,6 @@ class GameHandler extends LoggerClass {
 
 		setInterval(() => {
 			this.openRooms.forEach((room) => {
-				if (room.getUUID() === 'debugging') return;
-
 				if (room.isEmpty()) {
 					this.inactiveRooms.set(
 						room.getUUID(),

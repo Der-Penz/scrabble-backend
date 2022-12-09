@@ -9,6 +9,7 @@ export interface User {
 	joined: Date;
 	lastOnline: Date;
 	bestScore: number;
+	wins: number;
 	bestWord: string;
 	__v: number;
 }
