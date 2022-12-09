@@ -4,7 +4,9 @@ import Scrabble from './Scrabble';
 class PointObjective extends BaseObjective {
 	private pointsToWin: number;
 
-	constructor(pointsToWin: number = 100) {
+	static readonly DEFAULT_POINTS = 50;
+
+	constructor(pointsToWin: number = PointObjective.DEFAULT_POINTS) {
 		super();
 
 		this.type = 'POINT';
@@ -22,7 +24,7 @@ class PointObjective extends BaseObjective {
 		return super.checkForGameEnd(currentGame);
 	}
 
-	getPointsToWin(){
+	getPointsToWin() {
 		return this.pointsToWin;
 	}
 }

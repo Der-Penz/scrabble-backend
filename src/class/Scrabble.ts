@@ -69,6 +69,10 @@ class Scrabble {
 		return [...this.benches.keys()][this.currentPlayerIndex];
 	}
 
+	onTurn(who: string): boolean {
+		return this.currentPlayerName() === who;
+	}
+
 	private currentBench(): Bench {
 		return this.benches.get(this.currentPlayerName());
 	}
@@ -256,6 +260,7 @@ class Scrabble {
 
 		const move = new TradeMove(this.currentPlayerName(), toTrade, newTiles);
 		this.nextPlayer(move);
+		return newTiles;
 	}
 
 	placeWord(

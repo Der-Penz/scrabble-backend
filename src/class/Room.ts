@@ -34,7 +34,11 @@ class Room extends LoggerClass {
 	}
 
 	joinRoom(ws: Websocket, name: string) {
-		if (this.gameState !== 'waiting' || this.isFull()) {
+		if (
+			this.gameState !== 'waiting' ||
+			this.isFull() ||
+			this.hasName(name)
+		) {
 			return false;
 		}
 

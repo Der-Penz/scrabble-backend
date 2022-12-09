@@ -5,7 +5,9 @@ class TimeObjective extends BaseObjective {
 	private timeToPlay: number;
 	private startTime: number;
 
-	constructor(millisToPlay: number) {
+	static readonly DEFAULT_TIME = 600000;
+
+	constructor(millisToPlay: number = TimeObjective.DEFAULT_TIME) {
 		super();
 		this.type = 'TIME';
 		this.startTime = Date.now();
@@ -28,12 +30,12 @@ class TimeObjective extends BaseObjective {
 		return super.checkForGameEnd(currentGame);
 	}
 
-	getTime(){
+	getTime() {
 		return this.timeToPlay;
 	}
 
-	getLeftTime(){
-		return Math.max((this.timeToPlay + this.startTime) - Date.now(), 0);
+	getLeftTime() {
+		return Math.max(this.timeToPlay + this.startTime - Date.now(), 0);
 	}
 }
 

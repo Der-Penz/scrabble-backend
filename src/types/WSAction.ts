@@ -1,3 +1,6 @@
+import Room from '../class/Room';
+import WSMessage from '../class/WSMessage';
+
 type WSAction =
 	| 'game:start'
 	| 'game:started'
@@ -13,5 +16,17 @@ type WSAction =
 	| 'game:move:place'
 	| 'game:move:ghost'
 	| 'game:move:forfeit';
+
+export interface Action {
+	readonly action: WSAction;
+	readonly needsStartedGame: boolean;
+	readonly needsActivePlayer: boolean;
+
+	execute(
+		room: Room,
+		name: string,
+		incomingMessage: WSMessage
+	): WSMessage | null;
+}
 
 export default WSAction;
