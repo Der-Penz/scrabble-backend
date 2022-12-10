@@ -11,7 +11,7 @@ const roomRouter = express.Router();
 roomRouter.post('/create', (req, res) => {
 	const customID = req.query.id as string;
 	const visibility = req.query.visibility as RoomVisibility;
-	
+
 	let newRoom;
 	if (GameHandler.instance.getRoom(customID)) {
 		return res.status(400).send(
@@ -50,7 +50,7 @@ roomRouter.get('/exists', (req, res) => {
 
 	const room = GameHandler.instance.getRoom(toCheck);
 
-	if(!room){
+	if (!room) {
 		return res.status(400).send(
 			new JsonErrorResponse(
 				'RoomNotExisting',
@@ -62,15 +62,11 @@ roomRouter.get('/exists', (req, res) => {
 		);
 	}
 
-	if (room.isStarted() || room.hasEnded()) {
+	if (room.isEnded()) {
 		return res.status(400).send(
-			new JsonErrorResponse(
-				'GameRunning',
-				'game is already running or has ended',
-				{
-					gameState: room.getGameState(),
-				}
-			).json()
+			new JsonErrorResponse('GameRunning', 'game has already ended', {
+				gameState: room.getGameState(),
+			}).json()
 		);
 	}
 
@@ -83,7 +79,7 @@ roomRouter.get('/exists', (req, res) => {
 });
 
 roomRouter.get('/opened', (req, res) => {
-	const rooms = GameHandler.instance.getPublicRooms().map((room) => ({
+	const rooms = GameHandler.instance.getPublicAvailableRooms().map((room) => ({
 		roomID: room.getUUID(),
 		roomJoinUrl: room.getUUID(true),
 		playerCount: room.getPlayerCount(),

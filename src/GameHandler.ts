@@ -41,6 +41,7 @@ class GameHandler extends LoggerClass {
 			if (roomIndex == undefined) {
 				return;
 			}
+
 			this.openRooms.splice(roomIndex, 1);
 
 			this.log(`deleting room ${roomID}`);
@@ -51,8 +52,10 @@ class GameHandler extends LoggerClass {
 		return this.openRooms.find((room) => room.getUUID() === roomID);
 	}
 
-	getPublicRooms(): Room[] {
-		return this.openRooms.filter((room) => room.isPublic() && !room.isStarted());
+	getPublicAvailableRooms(): Room[] {
+		return this.openRooms.filter(
+			(room) => room.isPublic() && !room.isPlaying() && !room.isEnded()
+		);
 	}
 }
 
