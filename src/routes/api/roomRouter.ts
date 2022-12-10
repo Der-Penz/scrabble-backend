@@ -10,7 +10,7 @@ const roomRouter = express.Router();
 
 roomRouter.post('/create', (req, res) => {
 	const customID = req.query.id as string;
-	const visibility = req.query.visibility as RoomVisibility;
+	const visibility = parseInt(req.query.visibility as string) || 0;
 
 	let newRoom;
 	if (GameHandler.instance.getRoom(customID)) {
@@ -79,13 +79,15 @@ roomRouter.get('/exists', (req, res) => {
 });
 
 roomRouter.get('/opened', (req, res) => {
-	const rooms = GameHandler.instance.getPublicAvailableRooms().map((room) => ({
-		roomID: room.getUUID(),
-		roomJoinUrl: room.getUUID(true),
-		playerCount: room.getPlayerCount(),
-		gameState: room.getGameState(),
-		host: room.getHost(),
-	}));
+	const rooms = GameHandler.instance
+		.getPublicAvailableRooms()
+		.map((room) => ({
+			roomID: room.getUUID(),
+			roomJoinUrl: room.getUUID(true),
+			playerCount: room.getPlayerCount(),
+			gameState: room.getGameState(),
+			host: room.getHost(),
+		}));
 
 	return res.status(200).send(new JsonResponse(rooms).json());
 });

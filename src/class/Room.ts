@@ -9,8 +9,9 @@ import Scrabble from './Scrabble';
 import SeparatedTimeObjective from './SeparatedTimeObjective';
 import TimeObjective from './TimeObjective';
 import WSMessage from './WSMessage';
+
 class Room extends LoggerClass {
-	static MAX_PLAYERS = 4;
+	static readonly MAX_PLAYERS = 4 as const;
 
 	private roomID: string;
 	private host: string;
@@ -32,45 +33,30 @@ class Room extends LoggerClass {
 		this.host = undefined;
 		this.playerCount = 0;
 		this.paused = false;
-		if (visibility === 'PRIVATE' || visibility === 'PUBLIC') {
-			this.visibility = visibility;
-		} else {
-			this.visibility = 'PUBLIC';
-		}
+		this.visibility = Math.min(0, Math.max(1, visibility));
 	}
 
 	joinRoom(ws: Websocket, name: string, socketToken?: string) {
-		if (this.gameState === 'playing' && socketToken) {
+		//reconnecting
+		if (this.isPlaying() && this.socketTokens.has(socketToken)) {
 			const formerName = this.socketTokens.get(socketToken);
-			if (formerName) {
-				this.players.set(ws, formerName);
-				this.sendMessage(
-					new WSMessage('player:self', {
-						name: formerName,
-						host: this.host === formerName,
-						socketToken,
-					}),
-					formerName
-				);
-				return true;
-			}
+			this.players.set(ws, formerName);
+			sendPlayerInfoToPlayer.call(this, formerName, socketToken);
+			return true;
 		}
 
-		if (
-			this.gameState !== 'waiting' ||
-			this.isFull() ||
-			this.hasName(name)
-		) {
+		//block joining for new player on running game, full game or existing name
+		if (!this.isWaiting() || this.isFull() || this.hasName(name)) {
 			return false;
 		}
-
-		this.log(`${name} joined room`);
 
 		if (!this.host) {
 			this.host = name;
 		}
 
-		const newSocketToken = uuid();
+		const newSocketToken = `${this.getUUID()}:${Math.random()
+			.toString(16)
+			.substring(10)}`;
 		this.socketTokens.set(newSocketToken, name);
 
 		this.broadcastMessage(
@@ -79,28 +65,34 @@ class Room extends LoggerClass {
 		this.players.set(ws, name);
 		this.playerCount = this.players.size;
 
-		this.players.forEach((pName, _) => {
-			if (pName === name) {
-				this.sendMessage(
-					new WSMessage('player:self', {
-						name,
-						host: this.host === name,
-						socketToken: newSocketToken,
-					}),
-					name
-				);
-			} else {
-				this.sendMessage(
-					new WSMessage('player:joined', {
-						name: pName,
-						host: this.host === pName,
-					}),
-					name
-				);
-			}
-		});
+		sendPlayerInfoToPlayer.call(this, name, newSocketToken);
 
 		return true;
+
+		function sendPlayerInfoToPlayer(name: string, socketToken: string) {
+			this.players.forEach((pName, _) => {
+				if (pName === name) {
+					this.sendMessage(
+						new WSMessage('player:self', {
+							name,
+							host: this.host === name,
+							socketToken,
+						}),
+						name
+					);
+				} else {
+					this.sendMessage(
+						new WSMessage('player:joined', {
+							name: pName,
+							host: this.host === pName,
+						}),
+						name
+					);
+				}
+			});
+
+			return;
+		}
 	}
 
 	leaveRoom(ws: Websocket): boolean {
@@ -109,16 +101,25 @@ class Room extends LoggerClass {
 		}
 
 		const name = this.getPlayer(ws);
-		this.log(`${name} left room`);
 
 		this.players.delete(ws);
-		if (!this.isPlaying()) {
-			this.socketTokens.forEach((value, key) => {
-				if (value === name) {
-					this.socketTokens.delete(key);
+		if (this.isWaiting()) {
+			this.socketTokens.forEach((tokenName, token) => {
+				if (tokenName === name) {
+					this.socketTokens.delete(token);
 					this.playerCount = this.players.size;
 				}
 			});
+
+			//terminate if host leaves
+			if (this.host === name) {
+				this.broadcastMessage(
+					new WSMessage('game:closed', {
+						reason: 'host left the game',
+					})
+				);
+				this.forceLeave();
+			}
 		}
 
 		this.broadcastMessage(
@@ -127,16 +128,6 @@ class Room extends LoggerClass {
 
 		if (this.isPlaying() && this.playerCount !== this.players.size) {
 			this.pauseGame();
-		}
-
-		//terminate if host leaves in lobby
-		if (this.isWaiting() && this.host === name) {
-			this.broadcastMessage(
-				new WSMessage('game:closed', {
-					reason: 'host left the game',
-				})
-			);
-			this.forceLeave();
 		}
 
 		return this.players.size === 0;
@@ -162,7 +153,7 @@ class Room extends LoggerClass {
 	}
 
 	startGame(objective: BaseObjective): Room {
-		if (this.isPlaying() || this.isEnded()) return this;
+		if (!this.isWaiting()) return this;
 
 		this.gameState = 'playing';
 		this.scrabbleGame = new Scrabble(
@@ -180,25 +171,26 @@ class Room extends LoggerClass {
 		if (this.isPaused() || this.isEnded()) {
 			return;
 		}
-
 		this.paused = true;
-		this.log('pausing game');
+
+		const TIME_TILL_FORCE_CLOSE = 60 as const;
 		const MESSAGE_INTERVAL_TIME = 5 as const;
-		const TIME_TILL_FORCE_CLOSE = 20 as const;
 		let passedTime = 0;
+
 		this.broadcastMessage(
 			new WSMessage('game:paused', {
 				time: TIME_TILL_FORCE_CLOSE - passedTime,
 			})
 		);
+
 		const interval = setInterval(() => {
 			passedTime += MESSAGE_INTERVAL_TIME;
 
 			//if player joined again restart
 			if (this.playerCount === this.players.size) {
+				clearInterval(interval);
 				this.sendStartState();
 				this.paused = false;
-				clearInterval(interval);
 				return;
 			}
 
@@ -209,14 +201,13 @@ class Room extends LoggerClass {
 			);
 
 			if (passedTime >= TIME_TILL_FORCE_CLOSE) {
-				this.log('closing room because of left player');
+				clearInterval(interval);
 				this.broadcastMessage(
 					new WSMessage('game:closed', {
-						reason: 'not all player were present in the game',
+						reason: 'time for player to reconnect ran out',
 					})
 				);
 
-				clearInterval(interval);
 				this.forceLeave();
 				this.gameState = 'ended';
 			}
@@ -224,8 +215,8 @@ class Room extends LoggerClass {
 	}
 
 	private forceLeave() {
+		this.socketTokens.clear();
 		this.players.forEach((value, key) => {
-			this.log(`${value} forced to leave room`);
 			key.close();
 			this.players.delete(key);
 		});
@@ -297,7 +288,7 @@ class Room extends LoggerClass {
 	}
 
 	isPublic() {
-		return this.visibility === 'PUBLIC';
+		return this.visibility === RoomVisibility.Public;
 	}
 
 	hasName(name: string) {

@@ -1,1 +1,4 @@
-export type RoomVisibility = 'PUBLIC' | 'PRIVATE';
+export enum RoomVisibility {
+	Public,
+	Private,
+}
