@@ -153,7 +153,12 @@ class Room extends LoggerClass {
 	}
 
 	startGame(objective: BaseObjective): Room {
-		if (!this.isWaiting()) return this;
+		if (!this.isWaiting()) {
+			return this;
+		}
+		if (this.playerCount <= 1) {
+			return this;
+		}
 
 		this.gameState = 'playing';
 		this.scrabbleGame = new Scrabble(
