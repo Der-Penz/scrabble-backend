@@ -29,11 +29,10 @@ wsServer.ws('/:roomID', function (ws, req) {
 		if (selectedRoom.isEnded()) {
 			return;
 		}
-		if(selectedRoom.isPaused()){
-			return ;
+		if (selectedRoom.isPaused()) {
+			return;
 		}
-		console.log("new message");
-		
+
 		const message = WSMessage.ToWSMessage(msg.toString());
 
 		if (message === null) {

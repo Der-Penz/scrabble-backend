@@ -74,6 +74,8 @@ roomRouter.get('/exists', (req, res) => {
 		new JsonResponse({
 			idToCheck: toCheck,
 			exists: room !== undefined,
+			gameState: room.getGameState(),
+			paused: room.isPaused(),
 		}).json()
 	);
 });
