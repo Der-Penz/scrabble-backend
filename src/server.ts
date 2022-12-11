@@ -13,9 +13,10 @@ import GameHandler from './GameHandler';
 import Room from './class/Room';
 import dictionaryRouter from './routes/api/dictionaryRouter';
 import authorizedRoute from './routes/middleware/authorized';
-import authenticationRouter from './routes/api/authentication';
+import authenticationRouter from './routes/api/authenticationRouter';
 import mongoose from 'mongoose';
 import MUser from './Schema/User';
+import statsRouter from './routes/api/statsRouter';
 
 const API_BASE = '/api/v1';
 export const { app } = wsExpress(express());
@@ -23,10 +24,11 @@ export const { app } = wsExpress(express());
 app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
-app.use(['/api/v1/word'], authorizedRoute);
+app.use([`${API_BASE}/word`, `${API_BASE}/stats`], authorizedRoute);
 app.use(logRoute);
 
 app.use(`${API_BASE}/auth`, authenticationRouter);
+app.use(`${API_BASE}/stats`, statsRouter);
 app.use(`${API_BASE}/room`, roomRouter);
 app.use(`${API_BASE}/word`, dictionaryRouter);
 
